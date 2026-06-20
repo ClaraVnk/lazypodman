@@ -24,6 +24,8 @@ import (
 	"github.com/jesseduffield/lazydocker/pkg/commands/ssh"
 	"github.com/jesseduffield/lazydocker/pkg/config"
 	"github.com/jesseduffield/lazydocker/pkg/i18n"
+	"github.com/jesseduffield/lazydocker/pkg/runtime"
+	dockerruntime "github.com/jesseduffield/lazydocker/pkg/runtime/docker"
 	"github.com/jesseduffield/lazydocker/pkg/utils"
 	"github.com/sasha-s/go-deadlock"
 	"github.com/sirupsen/logrus"
@@ -35,11 +37,16 @@ const (
 
 // DockerCommand is our main docker interface
 type DockerCommand struct {
-	Log                    *logrus.Entry
-	OSCommand              *OSCommand
-	Tr                     *i18n.TranslationSet
-	Config                 *config.AppConfig
-	Client                 *client.Client
+	Log       *logrus.Entry
+	OSCommand *OSCommand
+	Tr        *i18n.TranslationSet
+	Config    *config.AppConfig
+	Client    *client.Client
+	// Runtime is the abstraction lazypodman uses to talk to the container
+	// engine. During the Phase 1d transition it coexists with Client; in
+	// Phase 1d.5 the bare Client field disappears and only Runtime
+	// remains. See docs/adr/0004-phase-1d-staged-rewire-strategy.md.
+	Runtime                runtime.ContainerRuntime
 	InDockerComposeProject bool
 	// LocalProjectName is the compose project name for the directory where lazydocker was launched.
 	LocalProjectName string
@@ -136,6 +143,7 @@ func NewDockerCommand(log *logrus.Entry, osCommand *OSCommand, tr *i18n.Translat
 		Tr:                     tr,
 		Config:                 config,
 		Client:                 cli,
+		Runtime:                dockerruntime.New(cli),
 		ErrorChan:              errorChan,
 		InDockerComposeProject: true,
 		Closers:                []io.Closer{tunnelCloser},
