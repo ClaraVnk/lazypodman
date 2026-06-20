@@ -24,10 +24,50 @@ jobs:
         env:
           GOFLAGS: ""
         run: go install golang.org/x/vuln/cmd/govulncheck@latest
-      - name: Run govulncheck
+      - name: Run govulncheck with allowlist filter
         env:
           GOFLAGS: -mod=vendor
-        run: govulncheck ./...
+        run: |
+          set -uo pipefail
+
+          # Allowlist parsed from docs/security/accepted-vulnerabilities.md
+          # (any GO-YYYY-NNNN id mentioned there is treated as accepted).
+          ALLOWED=$(grep -oE 'GO-[0-9]{4}-[0-9]+' docs/security/accepted-vulnerabilities.md \
+                    | sort -u || true)
+          echo "Accepted vulnerabilities:"
+          echo "${ALLOWED:-  (none)}" | sed 's/^/  /'
+          echo
+
+          # Run govulncheck in JSON mode (always exits 0 with -format json).
+          govulncheck -format json ./... > vulns.json
+
+          # Extract IDs of vulns govulncheck flagged as actually called by our code.
+          FOUND=$(jq -r '. as $r | select($r.osv) | $r.osv.id' vulns.json \
+                  | sort -u || true)
+          echo "Vulnerabilities reported by govulncheck:"
+          echo "${FOUND:-  (none)}" | sed 's/^/  /'
+          echo
+
+          # Anything in FOUND but not in ALLOWED is a new finding -> fail.
+          UNACCEPTED=$(comm -23 <(echo "$FOUND") <(echo "$ALLOWED") || true)
+          if [ -n "$UNACCEPTED" ]; then
+            echo "::error::Unaccepted vulnerability/ies detected:"
+            echo "$UNACCEPTED" | sed 's/^/  - /'
+            echo
+            echo "Either fix the underlying dependency, or document the"
+            echo "vulnerability in docs/security/accepted-vulnerabilities.md"
+            echo "with a justification before re-running CI."
+            exit 1
+          fi
+
+          echo "All reported vulnerabilities are on the accepted list."
+      - name: Upload govulncheck report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: govulncheck-report
+          path: vulns.json
+          retention-days: 30
 
   gitleaks:
     name: Secret scan (gitleaks)
