@@ -1,5 +1,6 @@
 lazypodman*
 lazydocker*
+.claude/settings.local.json
 TODO.md
 Lazypodman.code-workspace
 Lazydocker.code-workspace
