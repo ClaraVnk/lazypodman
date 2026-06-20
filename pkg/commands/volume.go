@@ -3,54 +3,49 @@ package commands
 import (
 	"context"
 
-	"github.com/docker/docker/api/types/filters"
-	"github.com/docker/docker/api/types/volume"
-	"github.com/docker/docker/client"
+	"github.com/jesseduffield/lazydocker/pkg/domain"
+	"github.com/jesseduffield/lazydocker/pkg/runtime"
 	"github.com/sirupsen/logrus"
 )
 
-// Volume : A docker Volume
+// Volume : a container engine volume known to lazypodman.
 type Volume struct {
 	Name          string
-	Volume        *volume.Volume
-	Client        *client.Client
+	Volume        domain.VolumeInfo
 	OSCommand     *OSCommand
 	Log           *logrus.Entry
 	DockerCommand LimitedDockerCommand
+	Runtime       runtime.ContainerRuntime
 }
 
-// RefreshVolumes gets the volumes and stores them
+// RefreshVolumes returns the current list of volumes.
 func (c *DockerCommand) RefreshVolumes() ([]*Volume, error) {
-	result, err := c.Client.VolumeList(context.Background(), volume.ListOptions{})
+	volumes, err := c.Runtime.ListVolumes(context.Background())
 	if err != nil {
 		return nil, err
 	}
 
-	volumes := result.Volumes
-
 	ownVolumes := make([]*Volume, len(volumes))
-
 	for i, vol := range volumes {
 		ownVolumes[i] = &Volume{
 			Name:          vol.Name,
 			Volume:        vol,
-			Client:        c.Client,
 			OSCommand:     c.OSCommand,
 			Log:           c.Log,
 			DockerCommand: c,
+			Runtime:       c.Runtime,
 		}
 	}
-
 	return ownVolumes, nil
 }
 
-// PruneVolumes prunes volumes
+// PruneVolumes removes all unused volumes.
 func (c *DockerCommand) PruneVolumes() error {
-	_, err := c.Client.VolumesPrune(context.Background(), filters.Args{})
+	_, err := c.Runtime.PruneVolumes(context.Background())
 	return err
 }
 
-// Remove removes the volume
+// Remove deletes the volume.
 func (v *Volume) Remove(force bool) error {
-	return v.Client.VolumeRemove(context.Background(), v.Name, force)
+	return v.Runtime.RemoveVolume(context.Background(), v.Name, force)
 }

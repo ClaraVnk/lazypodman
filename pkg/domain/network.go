@@ -28,6 +28,7 @@ type IPAM struct {
 // NetworkContainerAttachment is a container attached to a network.
 type NetworkContainerAttachment struct {
 	ContainerID string
+	EndpointID  string
 	Name        string
 	IPv4Address string
 	IPv6Address string

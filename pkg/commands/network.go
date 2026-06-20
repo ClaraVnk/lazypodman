@@ -3,52 +3,49 @@ package commands
 import (
 	"context"
 
-	"github.com/docker/docker/api/types/filters"
-	"github.com/docker/docker/api/types/network"
-	"github.com/docker/docker/client"
+	"github.com/jesseduffield/lazydocker/pkg/domain"
+	"github.com/jesseduffield/lazydocker/pkg/runtime"
 	"github.com/sirupsen/logrus"
 )
 
-// Network : A docker Network
+// Network : a container engine network known to lazypodman.
 type Network struct {
 	Name          string
-	Network       network.Inspect
-	Client        *client.Client
+	Network       domain.NetworkInfo
 	OSCommand     *OSCommand
 	Log           *logrus.Entry
 	DockerCommand LimitedDockerCommand
+	Runtime       runtime.ContainerRuntime
 }
 
-// RefreshNetworks gets the networks and stores them
+// RefreshNetworks returns the current list of networks.
 func (c *DockerCommand) RefreshNetworks() ([]*Network, error) {
-	networks, err := c.Client.NetworkList(context.Background(), network.ListOptions{})
+	networks, err := c.Runtime.ListNetworks(context.Background())
 	if err != nil {
 		return nil, err
 	}
 
 	ownNetworks := make([]*Network, len(networks))
-
 	for i, nw := range networks {
 		ownNetworks[i] = &Network{
 			Name:          nw.Name,
 			Network:       nw,
-			Client:        c.Client,
 			OSCommand:     c.OSCommand,
 			Log:           c.Log,
 			DockerCommand: c,
+			Runtime:       c.Runtime,
 		}
 	}
-
 	return ownNetworks, nil
 }
 
-// PruneNetworks prunes networks
+// PruneNetworks removes all unused networks.
 func (c *DockerCommand) PruneNetworks() error {
-	_, err := c.Client.NetworksPrune(context.Background(), filters.Args{})
+	_, err := c.Runtime.PruneNetworks(context.Background())
 	return err
 }
 
-// Remove removes the network
-func (v *Network) Remove() error {
-	return v.Client.NetworkRemove(context.Background(), v.Name)
+// Remove deletes the network.
+func (n *Network) Remove() error {
+	return n.Runtime.RemoveNetwork(context.Background(), n.Network.ID)
 }

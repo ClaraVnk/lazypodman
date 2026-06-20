@@ -338,6 +338,7 @@ func networkContainersToDomain(in map[string]dockernetwork.EndpointResource) map
 	for id, ep := range in {
 		out[id] = domain.NetworkContainerAttachment{
 			ContainerID: id,
+			EndpointID:  ep.EndpointID,
 			Name:        ep.Name,
 			IPv4Address: ep.IPv4Address,
 			IPv6Address: ep.IPv6Address,
