@@ -6,7 +6,7 @@ env:
 on:
   push:
     branches:
-      - master
+      - main
   pull_request:
 
 jobs:
@@ -23,7 +23,7 @@ jobs:
       GOFLAGS: -mod=vendor
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: Setup Go
         uses: actions/setup-go@v6
         with:
@@ -45,7 +45,7 @@ jobs:
       GOARCH: amd64
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: Setup Go
         uses: actions/setup-go@v6
         with:
@@ -73,7 +73,7 @@ jobs:
       GOARCH: amd64
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: Setup Go
         uses: actions/setup-go@v6
         with:
@@ -100,7 +100,7 @@ jobs:
       GOFLAGS: -mod=vendor
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: Setup Go
         uses: actions/setup-go@v6
         with:
@@ -113,7 +113,7 @@ jobs:
           restore-keys: |
             ${{runner.os}}-go-
       - name: Lint
-        uses: golangci/golangci-lint-action@v3.1.0
+        uses: golangci/golangci-lint-action@v6
         with:
           version: latest
       - name: Format code
