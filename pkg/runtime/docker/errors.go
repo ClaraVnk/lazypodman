@@ -18,7 +18,7 @@ func mapErr(op string, err error) error {
 	}
 	var sentinel error
 	switch {
-	case cerrdefs.IsNotFound(err) || dockerclient.IsErrNotFound(err):
+	case cerrdefs.IsNotFound(err):
 		sentinel = runtime.ErrNotFound
 	case cerrdefs.IsConflict(err):
 		sentinel = runtime.ErrConflict
