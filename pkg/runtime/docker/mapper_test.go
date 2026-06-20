@@ -210,10 +210,8 @@ func TestVolumeToDomain(t *testing.T) {
 		t.Errorf("Status = %v", got.Status)
 	}
 
-	// nil safety
-	if _ = volumeToDomain(nil); false {
-		// just verify no panic
-	}
+	// nil safety: must not panic.
+	_ = volumeToDomain(nil)
 }
 
 func TestNetworkInspectToDomain(t *testing.T) {

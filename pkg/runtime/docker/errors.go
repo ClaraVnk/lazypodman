@@ -1,11 +1,10 @@
 package docker
 
 import (
-	"errors"
 	"fmt"
 
+	cerrdefs "github.com/containerd/errdefs"
 	dockerclient "github.com/docker/docker/client"
-	"github.com/docker/docker/errdefs"
 
 	"github.com/jesseduffield/lazydocker/pkg/runtime"
 )
@@ -19,34 +18,18 @@ func mapErr(op string, err error) error {
 	}
 	var sentinel error
 	switch {
-	case errdefs.IsNotFound(err) || dockerclient.IsErrNotFound(err):
+	case cerrdefs.IsNotFound(err) || dockerclient.IsErrNotFound(err):
 		sentinel = runtime.ErrNotFound
-	case errdefs.IsConflict(err):
+	case cerrdefs.IsConflict(err):
 		sentinel = runtime.ErrConflict
-	case errdefs.IsUnauthorized(err) || errdefs.IsForbidden(err):
+	case cerrdefs.IsUnauthorized(err) || cerrdefs.IsPermissionDenied(err):
 		sentinel = runtime.ErrUnauthorized
-	case errdefs.IsNotImplemented(err):
+	case cerrdefs.IsNotImplemented(err):
 		sentinel = runtime.ErrUnsupported
-	case errdefs.IsUnavailable(err) || dockerclient.IsErrConnectionFailed(err):
+	case cerrdefs.IsUnavailable(err) || dockerclient.IsErrConnectionFailed(err):
 		sentinel = runtime.ErrUnavailable
 	default:
 		return fmt.Errorf("%s: %w", op, err)
 	}
 	return fmt.Errorf("%s: %w: %s", op, sentinel, err.Error())
-}
-
-// asSentinel exposes the wrapped sentinel error for tests.
-func asSentinel(err error) error {
-	for _, target := range []error{
-		runtime.ErrNotFound,
-		runtime.ErrConflict,
-		runtime.ErrUnauthorized,
-		runtime.ErrUnsupported,
-		runtime.ErrUnavailable,
-	} {
-		if errors.Is(err, target) {
-			return target
-		}
-	}
-	return nil
 }

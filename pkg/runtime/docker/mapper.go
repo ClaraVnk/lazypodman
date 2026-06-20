@@ -23,7 +23,7 @@ func containerSummaryToInfo(s dockercontainer.Summary) domain.ContainerInfo {
 		ImageID:    s.ImageID,
 		Command:    s.Command,
 		Created:    time.Unix(s.Created, 0),
-		State:      mapContainerState(string(s.State)),
+		State:      mapContainerState(s.State),
 		Status:     s.Status,
 		Ports:      mapPorts(s.Ports),
 		Labels:     copyStringMap(s.Labels),
@@ -262,7 +262,7 @@ func imageSummaryToInfo(s dockerimage.Summary) domain.ImageInfo {
 		Created:     time.Unix(s.Created, 0),
 		Size:        s.Size,
 		SharedSize:  s.SharedSize,
-		VirtualSize: s.VirtualSize,
+		VirtualSize: s.Size, // VirtualSize is omitted in API v1.44+, mirror Size for backwards compat
 		Labels:      copyStringMap(s.Labels),
 		Containers:  s.Containers,
 	}
