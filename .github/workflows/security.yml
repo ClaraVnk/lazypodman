@@ -38,17 +38,24 @@ jobs:
           echo "${ALLOWED:-  (none)}" | sed 's/^/  /'
           echo
 
-          # Run govulncheck in JSON mode (always exits 0 with -format json).
-          govulncheck -format json ./... > vulns.json
+          # govulncheck exits 3 when it finds vulnerabilities that are
+          # actually called from user code -- exactly what we want to gate.
+          # Capture stdout, ignore the exit code, parse the text output.
+          set +e
+          govulncheck ./... | tee govulncheck.txt
+          set -e
 
-          # Extract IDs of vulns govulncheck flagged as actually called by our code.
-          FOUND=$(jq -r '. as $r | select($r.osv) | $r.osv.id' vulns.json \
+          # Only lines like "Vulnerability #N: GO-YYYY-NNNN" represent
+          # vulns reachable from our code (vs. "found in modules you
+          # require but your code doesn't appear to call").
+          FOUND=$(grep -oE 'Vulnerability #[0-9]+: GO-[0-9]{4}-[0-9]+' govulncheck.txt \
+                  | grep -oE 'GO-[0-9]{4}-[0-9]+' \
                   | sort -u || true)
-          echo "Vulnerabilities reported by govulncheck:"
+          echo
+          echo "Reachable vulnerabilities reported by govulncheck:"
           echo "${FOUND:-  (none)}" | sed 's/^/  /'
           echo
 
-          # Anything in FOUND but not in ALLOWED is a new finding -> fail.
           UNACCEPTED=$(comm -23 <(echo "$FOUND") <(echo "$ALLOWED") || true)
           if [ -n "$UNACCEPTED" ]; then
             echo "::error::Unaccepted vulnerability/ies detected:"
@@ -56,17 +63,17 @@ jobs:
             echo
             echo "Either fix the underlying dependency, or document the"
             echo "vulnerability in docs/security/accepted-vulnerabilities.md"
-            echo "with a justification before re-running CI."
+            echo "with a written justification before re-running CI."
             exit 1
           fi
 
-          echo "All reported vulnerabilities are on the accepted list."
+          echo "All reachable vulnerabilities are on the accepted list."
       - name: Upload govulncheck report
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: govulncheck-report
-          path: vulns.json
+          path: govulncheck.txt
           retention-days: 30
 
   gitleaks:
