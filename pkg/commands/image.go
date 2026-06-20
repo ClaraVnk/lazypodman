@@ -4,37 +4,32 @@ import (
 	"context"
 	"strings"
 
-	"github.com/docker/docker/api/types/filters"
-	"github.com/docker/docker/api/types/image"
-	"github.com/docker/docker/client"
 	"github.com/fatih/color"
+	"github.com/jesseduffield/lazydocker/pkg/domain"
+	"github.com/jesseduffield/lazydocker/pkg/runtime"
 	"github.com/jesseduffield/lazydocker/pkg/utils"
 	"github.com/samber/lo"
 	"github.com/sirupsen/logrus"
 )
 
-// Image : A docker Image
+// Image : an OCI image known to the runtime.
 type Image struct {
 	Name          string
 	Tag           string
 	ID            string
-	Image         image.Summary
-	Client        *client.Client
+	Image         domain.ImageInfo
 	OSCommand     *OSCommand
 	Log           *logrus.Entry
 	DockerCommand LimitedDockerCommand
+	Runtime       runtime.ContainerRuntime
 }
 
-// Remove removes the image
-func (i *Image) Remove(options image.RemoveOptions) error {
-	if _, err := i.Client.ImageRemove(context.Background(), i.ID, options); err != nil {
-		return err
-	}
-
-	return nil
+// Remove removes the image.
+func (i *Image) Remove(options runtime.RemoveImageOptions) error {
+	return i.Runtime.RemoveImage(context.Background(), i.ID, options)
 }
 
-func getHistoryResponseItemDisplayStrings(layer image.HistoryResponseItem) []string {
+func getHistoryResponseItemDisplayStrings(layer domain.ImageHistoryItem) []string {
 	tag := ""
 	if len(layer.Tags) > 0 {
 		tag = layer.Tags[0]
@@ -73,14 +68,14 @@ func getHistoryResponseItemDisplayStrings(layer image.HistoryResponseItem) []str
 	}
 }
 
-// RenderHistory renders the history of the image
+// RenderHistory renders the image build history as a table.
 func (i *Image) RenderHistory() (string, error) {
-	history, err := i.Client.ImageHistory(context.Background(), i.ID)
+	history, err := i.Runtime.ImageHistory(context.Background(), i.ID)
 	if err != nil {
 		return "", err
 	}
 
-	tableBody := lo.Map(history, func(layer image.HistoryResponseItem, _ int) []string {
+	tableBody := lo.Map(history, func(layer domain.ImageHistoryItem, _ int) []string {
 		return getHistoryResponseItemDisplayStrings(layer)
 	})
 
@@ -90,9 +85,9 @@ func (i *Image) RenderHistory() (string, error) {
 	return utils.RenderTable(table)
 }
 
-// RefreshImages returns a slice of docker images
+// RefreshImages returns the current list of images.
 func (c *DockerCommand) RefreshImages() ([]*Image, error) {
-	images, err := c.Client.ImageList(context.Background(), image.ListOptions{})
+	images, err := c.Runtime.ListImages(context.Background())
 	if err != nil {
 		return nil, err
 	}
@@ -101,9 +96,8 @@ func (c *DockerCommand) RefreshImages() ([]*Image, error) {
 
 	for i, img := range images {
 		firstTag := ""
-		tags := img.RepoTags
-		if len(tags) > 0 {
-			firstTag = tags[0]
+		if len(img.RepoTags) > 0 {
+			firstTag = img.RepoTags[0]
 		}
 
 		nameParts := strings.Split(firstTag, ":")
@@ -126,18 +120,18 @@ func (c *DockerCommand) RefreshImages() ([]*Image, error) {
 			Name:          name,
 			Tag:           tag,
 			Image:         img,
-			Client:        c.Client,
 			OSCommand:     c.OSCommand,
 			Log:           c.Log,
 			DockerCommand: c,
+			Runtime:       c.Runtime,
 		}
 	}
 
 	return ownImages, nil
 }
 
-// PruneImages prunes images
+// PruneImages removes dangling images.
 func (c *DockerCommand) PruneImages() error {
-	_, err := c.Client.ImagesPrune(context.Background(), filters.Args{})
+	_, err := c.Runtime.PruneImages(context.Background())
 	return err
 }

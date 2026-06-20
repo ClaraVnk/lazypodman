@@ -5,7 +5,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/docker/docker/api/types/image"
 	"github.com/fatih/color"
 	"github.com/jesseduffield/gocui"
 	"github.com/jesseduffield/lazydocker/pkg/commands"
@@ -13,6 +12,7 @@ import (
 	"github.com/jesseduffield/lazydocker/pkg/gui/panels"
 	"github.com/jesseduffield/lazydocker/pkg/gui/presentation"
 	"github.com/jesseduffield/lazydocker/pkg/gui/types"
+	"github.com/jesseduffield/lazydocker/pkg/runtime"
 	"github.com/jesseduffield/lazydocker/pkg/tasks"
 	"github.com/jesseduffield/lazydocker/pkg/utils"
 	"github.com/samber/lo"
@@ -80,7 +80,7 @@ func (gui *Gui) imageConfigStr(image *commands.Image) string {
 	output += utils.WithPadding("ID: ", padding) + image.Image.ID + "\n"
 	output += utils.WithPadding("Tags: ", padding) + utils.ColoredString(strings.Join(image.Image.RepoTags, ", "), color.FgGreen) + "\n"
 	output += utils.WithPadding("Size: ", padding) + utils.FormatDecimalBytes(int(image.Image.Size)) + "\n"
-	output += utils.WithPadding("Created: ", padding) + fmt.Sprintf("%v", time.Unix(image.Image.Created, 0).Format(time.RFC1123)) + "\n"
+	output += utils.WithPadding("Created: ", padding) + fmt.Sprintf("%v", image.Image.Created.Format(time.RFC1123)) + "\n"
 
 	history, err := image.RenderHistory()
 	if err != nil {
@@ -123,7 +123,7 @@ func (gui *Gui) handleImagesRemoveMenu(g *gocui.Gui, v *gocui.View) error {
 	type removeImageOption struct {
 		description   string
 		command       string
-		configOptions image.RemoveOptions
+		configOptions runtime.RemoveImageOptions
 	}
 
 	img, err := gui.Panels.Images.GetSelectedItem()
@@ -138,22 +138,22 @@ func (gui *Gui) handleImagesRemoveMenu(g *gocui.Gui, v *gocui.View) error {
 		{
 			description:   gui.Tr.Remove,
 			command:       "docker image rm " + shortSha,
-			configOptions: image.RemoveOptions{PruneChildren: true, Force: false},
+			configOptions: runtime.RemoveImageOptions{NoPrune: false, Force: false},
 		},
 		{
 			description:   gui.Tr.RemoveWithoutPrune,
 			command:       "docker image rm --no-prune " + shortSha,
-			configOptions: image.RemoveOptions{PruneChildren: false, Force: false},
+			configOptions: runtime.RemoveImageOptions{NoPrune: true, Force: false},
 		},
 		{
 			description:   gui.Tr.RemoveWithForce,
 			command:       "docker image rm --force " + shortSha,
-			configOptions: image.RemoveOptions{PruneChildren: true, Force: true},
+			configOptions: runtime.RemoveImageOptions{NoPrune: false, Force: true},
 		},
 		{
 			description:   gui.Tr.RemoveWithoutPruneWithForce,
 			command:       "docker image rm --no-prune --force " + shortSha,
-			configOptions: image.RemoveOptions{PruneChildren: false, Force: true},
+			configOptions: runtime.RemoveImageOptions{NoPrune: true, Force: true},
 		},
 	}
 
