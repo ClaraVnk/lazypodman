@@ -1,5 +1,10 @@
+lazypodman*
 lazydocker*
 TODO.md
+Lazypodman.code-workspace
 Lazydocker.code-workspace
 .vscode
 .idea
+.envrc
+.direnv/
+coverage.txt
