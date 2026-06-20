@@ -4,7 +4,7 @@ import (
 	"context"
 	"os/exec"
 
-	"github.com/docker/docker/api/types/container"
+	"github.com/jesseduffield/lazydocker/pkg/runtime"
 	"github.com/jesseduffield/lazydocker/pkg/utils"
 	"github.com/sirupsen/logrus"
 )
@@ -21,7 +21,7 @@ type Service struct {
 }
 
 // Remove removes the service's containers
-func (s *Service) Remove(options container.RemoveOptions) error {
+func (s *Service) Remove(options runtime.RemoveContainerOptions) error {
 	return s.Container.Remove(options)
 }
 

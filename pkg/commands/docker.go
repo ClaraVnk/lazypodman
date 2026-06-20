@@ -18,7 +18,6 @@ import (
 	cliconfig "github.com/docker/cli/cli/config"
 	ddocker "github.com/docker/cli/cli/context/docker"
 	ctxstore "github.com/docker/cli/cli/context/store"
-	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/client"
 	"github.com/imdario/mergo"
 	"github.com/jesseduffield/lazydocker/pkg/commands/ssh"
@@ -383,7 +382,7 @@ func (c *DockerCommand) GetContainers(existingContainers []*Container) ([]*Conta
 	c.ContainerMutex.Lock()
 	defer c.ContainerMutex.Unlock()
 
-	containers, err := c.Client.ContainerList(context.Background(), container.ListOptions{All: true})
+	containers, err := c.Runtime.ListContainers(context.Background())
 	if err != nil {
 		return nil, err
 	}
@@ -405,7 +404,7 @@ func (c *DockerCommand) GetContainers(existingContainers []*Container) ([]*Conta
 		if newContainer == nil {
 			newContainer = &Container{
 				ID:            ctr.ID,
-				Client:        c.Client,
+				Runtime:       c.Runtime,
 				OSCommand:     c.OSCommand,
 				Log:           c.Log,
 				DockerCommand: c,
@@ -417,12 +416,10 @@ func (c *DockerCommand) GetContainers(existingContainers []*Container) ([]*Conta
 		// if the container is made with a name label we will use that
 		if name, ok := ctr.Labels["name"]; ok {
 			newContainer.Name = name
+		} else if primary := ctr.PrimaryName(); primary != "" {
+			newContainer.Name = primary
 		} else {
-			if len(ctr.Names) > 0 {
-				newContainer.Name = strings.TrimLeft(ctr.Names[0], "/")
-			} else {
-				newContainer.Name = ctr.ID
-			}
+			newContainer.Name = ctr.ID
 		}
 		newContainer.ServiceName = ctr.Labels["com.docker.compose.service"]
 		newContainer.ProjectName = ctr.Labels["com.docker.compose.project"]
@@ -486,11 +483,12 @@ func (c *DockerCommand) SetContainerDetails(containers []*Container) {
 		ctr := ctr
 		wg.Add(1)
 		go func() {
-			details, err := c.Client.ContainerInspect(context.Background(), ctr.ID)
+			details, err := c.Runtime.InspectContainer(context.Background(), ctr.ID)
 			if err != nil {
 				c.Log.Error(err)
 			} else {
 				ctr.Details = details
+				ctr.DetailsFetched = true
 			}
 			wg.Done()
 		}()

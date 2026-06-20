@@ -8,10 +8,11 @@ import (
 	"os/signal"
 	"time"
 
-	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/pkg/stdcopy"
 	"github.com/fatih/color"
 	"github.com/jesseduffield/lazydocker/pkg/commands"
+	"github.com/jesseduffield/lazydocker/pkg/domain"
+	"github.com/jesseduffield/lazydocker/pkg/runtime"
 	"github.com/jesseduffield/lazydocker/pkg/tasks"
 	"github.com/jesseduffield/lazydocker/pkg/utils"
 )
@@ -56,7 +57,7 @@ func (gui *Gui) renderContainerLogsToMainAux(container *commands.Container, ctx 
 				gui.Log.Error(err)
 				return
 			}
-			if result.State.Running {
+			if result.State == domain.ContainerStateRunning {
 				return
 			}
 		}
@@ -105,13 +106,11 @@ func (gui *Gui) promptToReturn() {
 }
 
 func (gui *Gui) writeContainerLogs(ctr *commands.Container, ctx context.Context, writer io.Writer) error {
-	readCloser, err := gui.DockerCommand.Client.ContainerLogs(ctx, ctr.ID, container.LogsOptions{
-		ShowStdout: true,
-		ShowStderr: true,
-		Timestamps: gui.Config.UserConfig.Logs.Timestamps,
-		Since:      gui.Config.UserConfig.Logs.Since,
-		Tail:       gui.Config.UserConfig.Logs.Tail,
+	readCloser, err := gui.DockerCommand.Runtime.ContainerLogs(ctx, ctr.ID, runtime.LogOptions{
 		Follow:     true,
+		Tail:       gui.Config.UserConfig.Logs.Tail,
+		Since:      gui.Config.UserConfig.Logs.Since,
+		Timestamps: gui.Config.UserConfig.Logs.Timestamps,
 	})
 	if err != nil {
 		gui.Log.Error(err)

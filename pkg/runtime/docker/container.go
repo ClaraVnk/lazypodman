@@ -80,19 +80,20 @@ func (r *Runtime) RemoveContainer(ctx context.Context, id string, opts runtime.R
 }
 
 // ContainerLogs streams a container's logs. Caller must Close the reader.
+//
+// The Docker engine returns logs multiplexed (stdout/stderr framed with
+// stdcopy) when the container does not have a TTY. Demuxing is the
+// caller's responsibility for now — a future PR will abstract this
+// behind a domain.LogStream type and move the demux into the adapter.
 func (r *Runtime) ContainerLogs(ctx context.Context, id string, opts runtime.LogOptions) (io.ReadCloser, error) {
 	dockerOpts := dockercontainer.LogsOptions{
 		ShowStdout: true,
 		ShowStderr: true,
 		Follow:     opts.Follow,
 		Tail:       opts.Tail,
+		Since:      opts.Since,
+		Until:      opts.Until,
 		Timestamps: opts.Timestamps,
-	}
-	if !opts.Since.IsZero() {
-		dockerOpts.Since = opts.Since.Format(time.RFC3339Nano)
-	}
-	if !opts.Until.IsZero() {
-		dockerOpts.Until = opts.Until.Format(time.RFC3339Nano)
 	}
 	rc, err := r.cli.ContainerLogs(ctx, id, dockerOpts)
 	if err != nil {

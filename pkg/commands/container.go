@@ -6,44 +6,48 @@ import (
 	"os/exec"
 	"strings"
 
-	"github.com/docker/docker/api/types/container"
-	"github.com/docker/docker/api/types/filters"
-	"github.com/docker/docker/client"
 	"github.com/go-errors/errors"
+	"github.com/jesseduffield/lazydocker/pkg/domain"
 	"github.com/jesseduffield/lazydocker/pkg/i18n"
+	"github.com/jesseduffield/lazydocker/pkg/runtime"
 	"github.com/jesseduffield/lazydocker/pkg/utils"
 	"github.com/sasha-s/go-deadlock"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/xerrors"
 )
 
-// Container : A docker Container
+// Container is one container managed by lazypodman.
 type Container struct {
 	Name            string
 	ServiceName     string
 	ContainerNumber string // might make this an int in the future if need be
 
-	// OneOff tells us if the container is just a job container or is actually bound to the service
-	OneOff          bool
-	ProjectName     string
-	ID              string
-	Container       container.Summary
-	Client          *client.Client
-	OSCommand       *OSCommand
-	Log             *logrus.Entry
-	StatHistory     []*RecordedStats
-	Details         container.InspectResponse
+	// OneOff tells us if the container is just a job container or is actually
+	// bound to the service.
+	OneOff      bool
+	ProjectName string
+	ID          string
+	Container   domain.ContainerInfo
+	OSCommand   *OSCommand
+	Log         *logrus.Entry
+	StatHistory []*RecordedStats
+	Details     domain.ContainerDetails
+	// DetailsFetched is true once Inspect has populated Details at least
+	// once. Replaces the upstream ContainerJSONBase != nil heuristic.
+	DetailsFetched  bool
 	MonitoringStats bool
 	DockerCommand   LimitedDockerCommand
+	Runtime         runtime.ContainerRuntime
 	Tr              *i18n.TranslationSet
 
 	StatsMutex deadlock.Mutex
 }
 
-// Remove removes the container
-func (c *Container) Remove(options container.RemoveOptions) error {
+// Remove removes the container.
+func (c *Container) Remove(options runtime.RemoveContainerOptions) error {
 	c.Log.Warn(fmt.Sprintf("removing container %s", c.Name))
-	if err := c.Client.ContainerRemove(context.Background(), c.ID, options); err != nil {
+	err := c.Runtime.RemoveContainer(context.Background(), c.ID, options)
+	if err != nil {
 		if strings.Contains(err.Error(), "Stop the container before attempting removal or force remove") {
 			return ComplexError{
 				Code:    MustStopContainer,
@@ -53,100 +57,98 @@ func (c *Container) Remove(options container.RemoveOptions) error {
 		}
 		return err
 	}
-
 	return nil
 }
 
-// Start starts the container
+// Start starts the container.
 func (c *Container) Start() error {
 	c.Log.Warn(fmt.Sprintf("starting container %s", c.Name))
-	return c.Client.ContainerStart(context.Background(), c.ID, container.StartOptions{})
+	return c.Runtime.StartContainer(context.Background(), c.ID)
 }
 
-// Stop stops the container
+// Stop stops the container.
 func (c *Container) Stop() error {
 	c.Log.Warn(fmt.Sprintf("stopping container %s", c.Name))
-	return c.Client.ContainerStop(context.Background(), c.ID, container.StopOptions{})
+	return c.Runtime.StopContainer(context.Background(), c.ID, nil)
 }
 
-// Pause pauses the container
+// Pause pauses the container.
 func (c *Container) Pause() error {
 	c.Log.Warn(fmt.Sprintf("pausing container %s", c.Name))
-	return c.Client.ContainerPause(context.Background(), c.ID)
+	return c.Runtime.PauseContainer(context.Background(), c.ID)
 }
 
-// Unpause unpauses the container
+// Unpause unpauses the container.
 func (c *Container) Unpause() error {
 	c.Log.Warn(fmt.Sprintf("unpausing container %s", c.Name))
-	return c.Client.ContainerUnpause(context.Background(), c.ID)
+	return c.Runtime.UnpauseContainer(context.Background(), c.ID)
 }
 
-// Restart restarts the container
+// Restart restarts the container.
 func (c *Container) Restart() error {
 	c.Log.Warn(fmt.Sprintf("restarting container %s", c.Name))
-	return c.Client.ContainerRestart(context.Background(), c.ID, container.StopOptions{})
+	return c.Runtime.RestartContainer(context.Background(), c.ID, nil)
 }
 
-// Attach attaches the container
+// Attach attaches to the container by spawning a `docker attach` process.
+// Phase 1d keeps the interactive attach as a CLI exec, see ADR 0004.
 func (c *Container) Attach() (*exec.Cmd, error) {
 	if !c.DetailsLoaded() {
 		return nil, errors.New(c.Tr.WaitingForContainerInfo)
 	}
-
-	// verify that we can in fact attach to this container
 	if !c.Details.Config.OpenStdin {
 		return nil, errors.New(c.Tr.UnattachableContainerError)
 	}
-
-	if c.Container.State == "exited" {
+	if c.Container.State == domain.ContainerStateExited {
 		return nil, errors.New(c.Tr.CannotAttachStoppedContainerError)
 	}
 
 	c.Log.Warn(fmt.Sprintf("attaching to container %s", c.Name))
-	// TODO: use SDK
 	cmd := c.OSCommand.NewCmd("docker", "attach", "--sig-proxy=false", c.ID)
 	return cmd, nil
 }
 
-// Top returns process information
-func (c *Container) Top(ctx context.Context) (container.TopResponse, error) {
-	detail, err := c.Inspect()
+// Top returns the process table of the container. Errors if the container
+// is not running.
+func (c *Container) Top(ctx context.Context) (domain.TopOutput, error) {
+	details, err := c.Inspect()
 	if err != nil {
-		return container.TopResponse{}, err
+		return domain.TopOutput{}, err
 	}
-
-	// check container status
-	if !detail.State.Running {
-		return container.TopResponse{}, errors.New("container is not running")
+	if details.State != domain.ContainerStateRunning {
+		return domain.TopOutput{}, errors.New("container is not running")
 	}
-
-	return c.Client.ContainerTop(ctx, c.ID, []string{})
+	return c.Runtime.ContainerTop(ctx, c.ID)
 }
 
-// PruneContainers prunes containers
+// PruneContainers removes all stopped containers.
 func (c *DockerCommand) PruneContainers() error {
-	_, err := c.Client.ContainersPrune(context.Background(), filters.Args{})
+	_, err := c.Runtime.PruneContainers(context.Background())
 	return err
 }
 
-// Inspect returns details about the container
-func (c *Container) Inspect() (container.InspectResponse, error) {
-	return c.Client.ContainerInspect(context.Background(), c.ID)
+// Inspect returns the details of the container.
+func (c *Container) Inspect() (domain.ContainerDetails, error) {
+	return c.Runtime.InspectContainer(context.Background(), c.ID)
 }
 
-// RenderTop returns details about the container
+// RenderTop returns the formatted process table of the container.
 func (c *Container) RenderTop(ctx context.Context) (string, error) {
 	result, err := c.Top(ctx)
 	if err != nil {
 		return "", err
 	}
-
-	return utils.RenderTable(append([][]string{result.Titles}, result.Processes...))
+	rows := make([][]string, 0, len(result.Processes)+1)
+	rows = append(rows, result.Headers)
+	for _, p := range result.Processes {
+		rows = append(rows, p.Fields)
+	}
+	return utils.RenderTable(rows)
 }
 
-// DetailsLoaded tells us whether we have yet loaded the details for a container.
-// Sometimes it takes some time for a container to have its details loaded
-// after it starts.
+// DetailsLoaded reports whether Inspect has populated Details at least
+// once. Sometimes it takes a moment for a freshly-started container to
+// have its details available.
 func (c *Container) DetailsLoaded() bool {
-	return c.Details.ContainerJSONBase != nil
+	return c.DetailsFetched
 }

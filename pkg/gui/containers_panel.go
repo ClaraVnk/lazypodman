@@ -6,14 +6,15 @@ import (
 	"strings"
 	"time"
 
-	"github.com/docker/docker/api/types/container"
 	"github.com/fatih/color"
 	"github.com/jesseduffield/gocui"
 	"github.com/jesseduffield/lazydocker/pkg/commands"
 	"github.com/jesseduffield/lazydocker/pkg/config"
+	"github.com/jesseduffield/lazydocker/pkg/domain"
 	"github.com/jesseduffield/lazydocker/pkg/gui/panels"
 	"github.com/jesseduffield/lazydocker/pkg/gui/presentation"
 	"github.com/jesseduffield/lazydocker/pkg/gui/types"
+	"github.com/jesseduffield/lazydocker/pkg/runtime"
 	"github.com/jesseduffield/lazydocker/pkg/tasks"
 	"github.com/jesseduffield/lazydocker/pkg/utils"
 	"github.com/samber/lo"
@@ -68,7 +69,7 @@ func (gui *Gui) getContainersPanel() *panels.SideListPanel[*commands.Container] 
 				// where a container restarts but the new logs don't get read.
 				// Note that this might be jarring if we have a lot of logs and the container
 				// restarts a lot, so let's keep an eye on it.
-				return "containers-" + container.ID + "-" + container.Container.State
+				return "containers-" + container.ID + "-" + string(container.Container.State)
 			},
 		},
 		ListPanel: panels.ListPanel[*commands.Container]{
@@ -83,7 +84,7 @@ func (gui *Gui) getContainersPanel() *panels.SideListPanel[*commands.Container] 
 			return sortContainers(a, b, gui.Config.UserConfig.Gui.LegacySortContainers)
 		},
 		Filter: func(container *commands.Container) bool {
-			if !gui.State.ShowExitedContainers && container.Container.State == "exited" {
+			if !gui.State.ShowExitedContainers && container.Container.State == domain.ContainerStateExited {
 				return false
 			}
 
@@ -122,10 +123,10 @@ func (gui *Gui) getContainersPanel() *panels.SideListPanel[*commands.Container] 
 	}
 }
 
-var containerStates = map[string]int{
-	"running": 1,
-	"exited":  2,
-	"created": 3,
+var containerStates = map[domain.ContainerState]int{
+	domain.ContainerStateRunning: 1,
+	domain.ContainerStateExited:  2,
+	domain.ContainerStateCreated: 3,
 }
 
 func sortContainers(a *commands.Container, b *commands.Container, legacySort bool) bool {
@@ -210,9 +211,9 @@ func (gui *Gui) containerConfigStr(container *commands.Container) string {
 	}
 
 	output += utils.WithPadding("Ports: ", padding)
-	if len(container.Details.NetworkSettings.Ports) > 0 {
+	if len(container.Details.NetworkSettings.PortBindings) > 0 {
 		output += "\n"
-		for k, v := range container.Details.NetworkSettings.Ports {
+		for k, v := range container.Details.NetworkSettings.PortBindings {
 			for _, host := range v {
 				output += fmt.Sprintf("%s%s %s\n", strings.Repeat(" ", padding), utils.ColoredString(host.HostPort+":", color.FgYellow), k)
 			}
@@ -325,7 +326,7 @@ func (gui *Gui) handleContainersRemoveMenu(g *gocui.Gui, v *gocui.View) error {
 		return nil
 	}
 
-	handleMenuPress := func(configOptions container.RemoveOptions) error {
+	handleMenuPress := func(configOptions runtime.RemoveContainerOptions) error {
 		return gui.WithWaitingStatus(gui.Tr.RemovingStatus, func() error {
 			if err := ctr.Remove(configOptions); err != nil {
 				if commands.HasErrorCode(err, commands.MustStopContainer) {
@@ -345,11 +346,11 @@ func (gui *Gui) handleContainersRemoveMenu(g *gocui.Gui, v *gocui.View) error {
 	menuItems := []*types.MenuItem{
 		{
 			LabelColumns: []string{gui.Tr.Remove, "docker rm " + ctr.ID[1:10]},
-			OnPress:      func() error { return handleMenuPress(container.RemoveOptions{}) },
+			OnPress:      func() error { return handleMenuPress(runtime.RemoveContainerOptions{}) },
 		},
 		{
 			LabelColumns: []string{gui.Tr.RemoveWithVolumes, "docker rm --volumes " + ctr.ID[1:10]},
-			OnPress:      func() error { return handleMenuPress(container.RemoveOptions{RemoveVolumes: true}) },
+			OnPress:      func() error { return handleMenuPress(runtime.RemoveContainerOptions{RemoveVolumes: true}) },
 		},
 	}
 
@@ -361,7 +362,7 @@ func (gui *Gui) handleContainersRemoveMenu(g *gocui.Gui, v *gocui.View) error {
 
 func (gui *Gui) PauseContainer(container *commands.Container) error {
 	return gui.WithWaitingStatus(gui.Tr.PausingStatus, func() (err error) {
-		if container.Details.State.Paused {
+		if container.Container.State == domain.ContainerStatePaused {
 			err = container.Unpause()
 		} else {
 			err = container.Pause()
@@ -507,7 +508,7 @@ func (gui *Gui) handleRemoveContainers() error {
 	return gui.createConfirmationPanel(gui.Tr.Confirm, gui.Tr.ConfirmRemoveContainers, func(g *gocui.Gui, v *gocui.View) error {
 		return gui.WithWaitingStatus(gui.Tr.RemovingStatus, func() error {
 			for _, ctr := range gui.Panels.Containers.List.GetAllItems() {
-				if err := ctr.Remove(container.RemoveOptions{Force: true}); err != nil {
+				if err := ctr.Remove(runtime.RemoveContainerOptions{Force: true}); err != nil {
 					gui.Log.Error(err)
 				}
 			}
@@ -556,13 +557,13 @@ func (gui *Gui) openContainerInBrowser(ctr *commands.Container) error {
 	}
 	// skip if the first port is not published
 	port := ctr.Container.Ports[0]
-	if port.IP == "" {
+	if port.HostIP == "" {
 		return nil
 	}
-	ip := port.IP
+	ip := port.HostIP
 	if ip == "0.0.0.0" {
 		ip = "localhost"
 	}
-	link := fmt.Sprintf("http://%s:%d/", ip, port.PublicPort)
+	link := fmt.Sprintf("http://%s:%d/", ip, port.HostPort)
 	return gui.OSCommand.OpenLink(link)
 }

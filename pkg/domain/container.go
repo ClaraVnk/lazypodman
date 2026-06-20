@@ -89,9 +89,19 @@ type NetworkEndpoint struct {
 	Aliases     []string
 }
 
-// NetworkSettings groups every network endpoint of a container.
+// PortBinding is one host-side binding of a published container port.
+type PortBinding struct {
+	HostIP   string
+	HostPort string // string because runtimes emit it as string ("8080"); zero value is "" (unbound)
+}
+
+// NetworkSettings groups every network endpoint of a container plus its
+// published port bindings.
 type NetworkSettings struct {
 	Endpoints map[string]NetworkEndpoint // keyed by network name
+	// PortBindings maps "<containerPort>/<proto>" (e.g. "80/tcp") to its
+	// host-side bindings. Empty when no port is published.
+	PortBindings map[string][]PortBinding
 }
 
 // ContainerConfig is the configuration a container was created with that

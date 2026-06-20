@@ -4,8 +4,8 @@ import (
 	"sort"
 	"testing"
 
-	"github.com/docker/docker/api/types/container"
 	"github.com/jesseduffield/lazydocker/pkg/commands"
+	"github.com/jesseduffield/lazydocker/pkg/domain"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -14,29 +14,29 @@ func sampleContainers() []*commands.Container {
 		{
 			ID:   "1",
 			Name: "1",
-			Container: container.Summary{
-				State: "exited",
+			Container: domain.ContainerInfo{
+				State: domain.ContainerStateExited,
 			},
 		},
 		{
 			ID:   "2",
 			Name: "2",
-			Container: container.Summary{
-				State: "running",
+			Container: domain.ContainerInfo{
+				State: domain.ContainerStateRunning,
 			},
 		},
 		{
 			ID:   "3",
 			Name: "3",
-			Container: container.Summary{
-				State: "running",
+			Container: domain.ContainerInfo{
+				State: domain.ContainerStateRunning,
 			},
 		},
 		{
 			ID:   "4",
 			Name: "4",
-			Container: container.Summary{
-				State: "created",
+			Container: domain.ContainerInfo{
+				State: domain.ContainerStateCreated,
 			},
 		},
 	}
@@ -47,29 +47,29 @@ func expectedPerStatusContainers() []*commands.Container {
 		{
 			ID:   "2",
 			Name: "2",
-			Container: container.Summary{
-				State: "running",
+			Container: domain.ContainerInfo{
+				State: domain.ContainerStateRunning,
 			},
 		},
 		{
 			ID:   "3",
 			Name: "3",
-			Container: container.Summary{
-				State: "running",
+			Container: domain.ContainerInfo{
+				State: domain.ContainerStateRunning,
 			},
 		},
 		{
 			ID:   "1",
 			Name: "1",
-			Container: container.Summary{
-				State: "exited",
+			Container: domain.ContainerInfo{
+				State: domain.ContainerStateExited,
 			},
 		},
 		{
 			ID:   "4",
 			Name: "4",
-			Container: container.Summary{
-				State: "created",
+			Container: domain.ContainerInfo{
+				State: domain.ContainerStateCreated,
 			},
 		},
 	}
@@ -80,29 +80,29 @@ func expectedLegacySortedContainers() []*commands.Container {
 		{
 			ID:   "1",
 			Name: "1",
-			Container: container.Summary{
-				State: "exited",
+			Container: domain.ContainerInfo{
+				State: domain.ContainerStateExited,
 			},
 		},
 		{
 			ID:   "2",
 			Name: "2",
-			Container: container.Summary{
-				State: "running",
+			Container: domain.ContainerInfo{
+				State: domain.ContainerStateRunning,
 			},
 		},
 		{
 			ID:   "3",
 			Name: "3",
-			Container: container.Summary{
-				State: "running",
+			Container: domain.ContainerInfo{
+				State: domain.ContainerStateRunning,
 			},
 		},
 		{
 			ID:   "4",
 			Name: "4",
-			Container: container.Summary{
-				State: "created",
+			Container: domain.ContainerInfo{
+				State: domain.ContainerStateCreated,
 			},
 		},
 	}

@@ -91,6 +91,10 @@ type RemoveImageOptions struct {
 }
 
 // LogOptions controls how ContainerLogs streams the log output.
+//
+// Since/Until accept any value the underlying runtime accepts as a time
+// spec: a Unix timestamp ("1700000000"), an RFC3339 timestamp, or a
+// relative duration ("10m", "1h30m"). Empty means "unrestricted".
 type LogOptions struct {
 	// Follow keeps the stream open and emits new entries as they
 	// appear. The caller must Close the reader to stop following.
@@ -98,12 +102,10 @@ type LogOptions struct {
 	// Tail is the maximum number of historical lines to return, or "all"
 	// for the full history. Empty means "all".
 	Tail string
-	// Since restricts the stream to entries newer than this time. Zero
-	// means "from the beginning".
-	Since time.Time
-	// Until restricts the stream to entries older than this time. Zero
-	// means "no upper bound".
-	Until time.Time
+	// Since restricts the stream to entries newer than this point.
+	Since string
+	// Until restricts the stream to entries older than this point.
+	Until string
 	// Timestamps prefixes each line with its RFC3339 timestamp.
 	Timestamps bool
 }

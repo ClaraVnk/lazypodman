@@ -210,23 +210,42 @@ func mapHealthStatus(s string) domain.HealthStatus {
 }
 
 func networkSettingsToDomain(ns *dockercontainer.NetworkSettings) domain.NetworkSettings {
-	if ns == nil || len(ns.Networks) == 0 {
+	if ns == nil {
 		return domain.NetworkSettings{}
 	}
-	out := domain.NetworkSettings{
-		Endpoints: make(map[string]domain.NetworkEndpoint, len(ns.Networks)),
-	}
-	for name, ep := range ns.Networks {
-		if ep == nil {
-			continue
+	out := domain.NetworkSettings{}
+	if len(ns.Networks) > 0 {
+		out.Endpoints = make(map[string]domain.NetworkEndpoint, len(ns.Networks))
+		for name, ep := range ns.Networks {
+			if ep == nil {
+				continue
+			}
+			out.Endpoints[name] = domain.NetworkEndpoint{
+				NetworkID:   ep.NetworkID,
+				NetworkName: name,
+				IPAddress:   ep.IPAddress,
+				IPv6Address: ep.GlobalIPv6Address,
+				MACAddress:  ep.MacAddress,
+				Aliases:     append([]string(nil), ep.Aliases...),
+			}
 		}
-		out.Endpoints[name] = domain.NetworkEndpoint{
-			NetworkID:   ep.NetworkID,
-			NetworkName: name,
-			IPAddress:   ep.IPAddress,
-			IPv6Address: ep.GlobalIPv6Address,
-			MACAddress:  ep.MacAddress,
-			Aliases:     append([]string(nil), ep.Aliases...),
+	}
+	if len(ns.Ports) > 0 {
+		out.PortBindings = make(map[string][]domain.PortBinding, len(ns.Ports))
+		for port, bindings := range ns.Ports {
+			key := string(port)
+			if len(bindings) == 0 {
+				out.PortBindings[key] = nil
+				continue
+			}
+			converted := make([]domain.PortBinding, 0, len(bindings))
+			for _, b := range bindings {
+				converted = append(converted, domain.PortBinding{
+					HostIP:   b.HostIP,
+					HostPort: b.HostPort,
+				})
+			}
+			out.PortBindings[key] = converted
 		}
 	}
 	return out
