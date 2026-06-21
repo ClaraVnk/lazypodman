@@ -1,15 +1,190 @@
 package podman
 
 import (
+	"strconv"
 	"strings"
 	"time"
 
+	"github.com/containers/podman/v5/libpod/define"
 	handlersTypes "github.com/containers/podman/v5/pkg/api/handlers/types"
 	entitiesTypes "github.com/containers/podman/v5/pkg/domain/entities/types"
 	netTypes "go.podman.io/common/libnetwork/types"
 
 	"github.com/jesseduffield/lazydocker/pkg/domain"
 )
+
+// inspectContainerToDomain converts a Podman container inspect payload to
+// the full detail view the inspect panel renders.
+func inspectContainerToDomain(d *define.InspectContainerData) domain.ContainerDetails {
+	info := domain.ContainerInfo{
+		ID:         d.ID,
+		Names:      []string{d.Name},
+		ImageID:    d.Image,
+		Created:    d.Created,
+		SizeRootFs: d.SizeRootFs,
+	}
+	if d.SizeRw != nil {
+		info.SizeRw = *d.SizeRw
+	}
+
+	details := domain.ContainerDetails{
+		Path:         d.Path,
+		Args:         d.Args,
+		RestartCount: int(d.RestartCount),
+	}
+
+	if c := d.Config; c != nil {
+		info.Image = c.Image
+		info.Labels = c.Labels
+		info.Command = strings.Join(c.Cmd, " ")
+		details.Config = domain.ContainerConfig{
+			Image:      c.Image,
+			Cmd:        c.Cmd,
+			Entrypoint: c.Entrypoint,
+			Env:        c.Env,
+			Labels:     c.Labels,
+			WorkingDir: c.WorkingDir,
+			User:       c.User,
+			Tty:        c.Tty,
+			OpenStdin:  c.OpenStdin,
+		}
+	}
+	if s := d.State; s != nil {
+		info.State = mapContainerState(s.Status)
+		info.Status = s.Status
+		details.StartedAt = s.StartedAt
+		details.FinishedAt = s.FinishedAt
+		details.ExitCode = int(s.ExitCode)
+		details.Health = healthToDomain(s.Health)
+	}
+	if ns := d.NetworkSettings; ns != nil {
+		details.NetworkSettings = inspectNetworkToDomain(ns)
+		info.Ports = portsFromInspect(ns.Ports)
+	}
+	details.Mounts = inspectMountsToDomain(d.Mounts)
+
+	details.ContainerInfo = info
+	return details
+}
+
+func healthToDomain(h *define.HealthCheckResults) *domain.Health {
+	if h == nil {
+		return nil
+	}
+	out := &domain.Health{
+		Status:        mapHealthStatus(h.Status),
+		FailingStreak: h.FailingStreak,
+	}
+	for _, l := range h.Log {
+		entry := domain.HealthLogEntry{ExitCode: l.ExitCode, Output: l.Output}
+		if t, err := time.Parse(time.RFC3339Nano, l.Start); err == nil {
+			entry.Start = t
+		}
+		if t, err := time.Parse(time.RFC3339Nano, l.End); err == nil {
+			entry.End = t
+		}
+		out.Log = append(out.Log, entry)
+	}
+	return out
+}
+
+func mapHealthStatus(s string) domain.HealthStatus {
+	switch strings.ToLower(s) {
+	case "healthy":
+		return domain.HealthStatusHealthy
+	case "unhealthy":
+		return domain.HealthStatusUnhealthy
+	case "starting":
+		return domain.HealthStatusStarting
+	default:
+		return domain.HealthStatusNone
+	}
+}
+
+func inspectNetworkToDomain(ns *define.InspectNetworkSettings) domain.NetworkSettings {
+	out := domain.NetworkSettings{}
+	if len(ns.Networks) > 0 {
+		out.Endpoints = make(map[string]domain.NetworkEndpoint, len(ns.Networks))
+		for name, n := range ns.Networks {
+			if n == nil {
+				continue
+			}
+			out.Endpoints[name] = domain.NetworkEndpoint{
+				NetworkID:   n.NetworkID,
+				NetworkName: name,
+				IPAddress:   n.IPAddress,
+				IPv6Address: n.GlobalIPv6Address,
+				MACAddress:  n.MacAddress,
+				Aliases:     n.Aliases,
+			}
+		}
+	}
+	if len(ns.Ports) > 0 {
+		out.PortBindings = make(map[string][]domain.PortBinding, len(ns.Ports))
+		for key, hostPorts := range ns.Ports {
+			bindings := make([]domain.PortBinding, 0, len(hostPorts))
+			for _, hp := range hostPorts {
+				bindings = append(bindings, domain.PortBinding{HostIP: hp.HostIP, HostPort: hp.HostPort})
+			}
+			out.PortBindings[key] = bindings
+		}
+	}
+	return out
+}
+
+func inspectMountsToDomain(in []define.InspectMount) []domain.Mount {
+	if len(in) == 0 {
+		return nil
+	}
+	out := make([]domain.Mount, 0, len(in))
+	for _, m := range in {
+		out = append(out, domain.Mount{
+			Type:        domain.MountType(m.Type),
+			Name:        m.Name,
+			Source:      m.Source,
+			Destination: m.Destination,
+			Driver:      m.Driver,
+			Mode:        m.Mode,
+			ReadWrite:   m.RW,
+		})
+	}
+	return out
+}
+
+// portsFromInspect parses the inspect "containerPort/proto" -> host bindings
+// map into the flat port list the summary view renders.
+func portsFromInspect(ports map[string][]define.InspectHostPort) []domain.Port {
+	if len(ports) == 0 {
+		return nil
+	}
+	var out []domain.Port
+	for key, hostPorts := range ports {
+		containerPort, proto := splitPortKey(key)
+		if len(hostPorts) == 0 {
+			out = append(out, domain.Port{ContainerPort: containerPort, Protocol: proto})
+			continue
+		}
+		for _, hp := range hostPorts {
+			p := domain.Port{HostIP: hp.HostIP, ContainerPort: containerPort, Protocol: proto}
+			if hostPort, err := strconv.ParseUint(hp.HostPort, 10, 16); err == nil {
+				p.HostPort = uint16(hostPort)
+			}
+			out = append(out, p)
+		}
+	}
+	return out
+}
+
+func splitPortKey(key string) (uint16, domain.PortProtocol) {
+	proto := domain.PortProtocolTCP
+	numStr := key
+	if i := strings.IndexByte(key, '/'); i >= 0 {
+		numStr = key[:i]
+		proto = domain.PortProtocol(strings.ToLower(key[i+1:]))
+	}
+	n, _ := strconv.ParseUint(numStr, 10, 16)
+	return uint16(n), proto
+}
 
 // imageSummaryToDomain converts a Podman ImageSummary to the summary view
 // the GUI list panel renders. Podman reports Created as a Unix timestamp.

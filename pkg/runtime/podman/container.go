@@ -24,6 +24,18 @@ func (r *Runtime) ListContainers(ctx context.Context) ([]domain.ContainerInfo, e
 	return out, nil
 }
 
+// InspectContainer returns the full detail view of a container.
+func (r *Runtime) InspectContainer(ctx context.Context, id string) (domain.ContainerDetails, error) {
+	data, err := containers.Inspect(r.conn, id, nil)
+	if err != nil {
+		return domain.ContainerDetails{}, mapErr("inspect container", err)
+	}
+	if data == nil {
+		return domain.ContainerDetails{}, mapErr("inspect container", runtime.ErrNotFound)
+	}
+	return inspectContainerToDomain(data), nil
+}
+
 func (r *Runtime) StartContainer(ctx context.Context, id string) error {
 	return mapErr("start container", containers.Start(r.conn, id, nil))
 }
