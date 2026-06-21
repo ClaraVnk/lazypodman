@@ -19,11 +19,9 @@ func TestUnimplementedGroupsReportUnsupported(t *testing.T) {
 
 	checks := map[string]error{
 		"InspectContainer": errOf(r.InspectContainer(ctx, "x")),
-		"ListNetworks":     errOf(r.ListNetworks(ctx)),
-		"RemoveNetwork":    r.RemoveNetwork(ctx, "x"),
-		"ListVolumes":      errOf(r.ListVolumes(ctx)),
-		"RemoveVolume":     r.RemoveVolume(ctx, "x", false),
 		"ContainerStats":   errOf(r.ContainerStats(ctx, "x")),
+		"ContainerLogs":    errOf(r.ContainerLogs(ctx, "x", runtime.LogOptions{})),
+		"AttachContainer":  errOf(r.AttachContainer(ctx, "x", runtime.AttachOptions{})),
 	}
 	for name, err := range checks {
 		if !errors.Is(err, runtime.ErrUnsupported) {

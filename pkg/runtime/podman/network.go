@@ -1,0 +1,44 @@
+package podman
+
+import (
+	"context"
+
+	"github.com/containers/podman/v5/pkg/bindings/network"
+
+	"github.com/jesseduffield/lazydocker/pkg/domain"
+)
+
+// ListNetworks returns every network known to Podman.
+func (r *Runtime) ListNetworks(ctx context.Context) ([]domain.NetworkInfo, error) {
+	list, err := network.List(r.conn, nil)
+	if err != nil {
+		return nil, mapErr("list networks", err)
+	}
+	out := make([]domain.NetworkInfo, 0, len(list))
+	for i := range list {
+		out = append(out, networkToDomain(list[i]))
+	}
+	return out, nil
+}
+
+// RemoveNetwork deletes a network.
+func (r *Runtime) RemoveNetwork(ctx context.Context, id string) error {
+	_, err := network.Remove(r.conn, id, nil)
+	return mapErr("remove network", err)
+}
+
+// PruneNetworks removes all unused networks.
+func (r *Runtime) PruneNetworks(ctx context.Context) (domain.PruneReport, error) {
+	reps, err := network.Prune(r.conn, nil)
+	if err != nil {
+		return domain.PruneReport{}, mapErr("prune networks", err)
+	}
+	var out domain.PruneReport
+	for _, p := range reps {
+		if p == nil {
+			continue
+		}
+		out.ItemsDeleted = append(out.ItemsDeleted, p.Name)
+	}
+	return out, nil
+}
