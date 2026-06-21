@@ -4,23 +4,20 @@ import (
 	"context"
 	"errors"
 	"testing"
-	"time"
 
 	"github.com/jesseduffield/lazydocker/pkg/runtime"
 )
 
-// TestUnimplementedGroupsReportUnsupported confirms the method groups not
-// yet implemented (images, networks, volumes, events, inspect) still
-// report runtime.ErrUnsupported. These stubs do not touch the connection,
-// so a zero-value Runtime is enough.
+// TestUnimplementedGroupsReportUnsupported confirms the operations not yet
+// implemented (InspectContainer, AttachContainer) still report
+// runtime.ErrUnsupported. These stubs do not touch the connection, so a
+// zero-value Runtime is enough.
 func TestUnimplementedGroupsReportUnsupported(t *testing.T) {
 	r := &Runtime{}
 	ctx := context.Background()
 
 	checks := map[string]error{
 		"InspectContainer": errOf(r.InspectContainer(ctx, "x")),
-		"ContainerStats":   errOf(r.ContainerStats(ctx, "x")),
-		"ContainerLogs":    errOf(r.ContainerLogs(ctx, "x", runtime.LogOptions{})),
 		"AttachContainer":  errOf(r.AttachContainer(ctx, "x", runtime.AttachOptions{})),
 	}
 	for name, err := range checks {
@@ -31,23 +28,6 @@ func TestUnimplementedGroupsReportUnsupported(t *testing.T) {
 
 	if err := r.Close(); err != nil {
 		t.Errorf("Close: got %v, want nil", err)
-	}
-}
-
-// TestEventsClosesWithError confirms the still-stubbed Events emits one
-// ErrUnsupported and then closes both channels.
-func TestEventsClosesWithError(t *testing.T) {
-	r := &Runtime{}
-	evCh, errCh := r.Events(context.Background(), time.Time{})
-
-	if err := <-errCh; !errors.Is(err, runtime.ErrUnsupported) {
-		t.Errorf("Events err: got %v, want ErrUnsupported", err)
-	}
-	if _, ok := <-errCh; ok {
-		t.Error("error channel should be closed after the single error")
-	}
-	if _, ok := <-evCh; ok {
-		t.Error("events channel should be closed")
 	}
 }
 
