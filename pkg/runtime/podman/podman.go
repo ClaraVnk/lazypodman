@@ -37,12 +37,6 @@ func (r *Runtime) Close() error {
 
 // ----- Containers ----- (implemented in container.go)
 
-// InspectContainer lands in a follow-up increment (the ContainerDetails
-// mapper); until then it reports unsupported.
-func (r *Runtime) InspectContainer(ctx context.Context, id string) (domain.ContainerDetails, error) {
-	return domain.ContainerDetails{}, unsupported("inspect container")
-}
-
 // ----- Images ----- (implemented in image.go)
 
 // ----- Networks ----- (implemented in network.go)

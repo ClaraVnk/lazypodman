@@ -8,22 +8,15 @@ import (
 	"github.com/jesseduffield/lazydocker/pkg/runtime"
 )
 
-// TestUnimplementedGroupsReportUnsupported confirms the operations not yet
-// implemented (InspectContainer, AttachContainer) still report
-// runtime.ErrUnsupported. These stubs do not touch the connection, so a
-// zero-value Runtime is enough.
-func TestUnimplementedGroupsReportUnsupported(t *testing.T) {
+// TestUnimplementedReportsUnsupported confirms the one operation not yet
+// implemented (AttachContainer) still reports runtime.ErrUnsupported. The
+// stub does not touch the connection, so a zero-value Runtime is enough.
+func TestUnimplementedReportsUnsupported(t *testing.T) {
 	r := &Runtime{}
 	ctx := context.Background()
 
-	checks := map[string]error{
-		"InspectContainer": errOf(r.InspectContainer(ctx, "x")),
-		"AttachContainer":  errOf(r.AttachContainer(ctx, "x", runtime.AttachOptions{})),
-	}
-	for name, err := range checks {
-		if !errors.Is(err, runtime.ErrUnsupported) {
-			t.Errorf("%s: got %v, want errors.Is(..., ErrUnsupported)", name, err)
-		}
+	if err := errOf(r.AttachContainer(ctx, "x", runtime.AttachOptions{})); !errors.Is(err, runtime.ErrUnsupported) {
+		t.Errorf("AttachContainer: got %v, want errors.Is(..., ErrUnsupported)", err)
 	}
 
 	if err := r.Close(); err != nil {
