@@ -33,6 +33,16 @@ func NewFromEnv() (*Runtime, error) {
 	if err != nil {
 		return nil, fmt.Errorf("resolve docker host: %w", err)
 	}
+	return NewWithHost(host)
+}
+
+// NewWithHost builds a *Runtime against an explicit Docker host string,
+// bypassing env-based resolution. It is the entry point for callers that
+// resolve the host themselves — for example pkg/commands, which must set
+// up an SSH tunnel and mutate DOCKER_HOST before the client is built.
+// API version negotiation is enabled and the TLS client config comes from
+// the environment.
+func NewWithHost(host string) (*Runtime, error) {
 	cli, err := dockerclient.NewClientWithOpts(
 		dockerclient.WithTLSClientConfigFromEnv(),
 		dockerclient.WithAPIVersionNegotiation(),
