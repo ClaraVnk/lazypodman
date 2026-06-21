@@ -41,4 +41,10 @@ func TestPodsCapabilityGating(t *testing.T) {
 	if !podman.PodsSupported() {
 		t.Error("Podman backend should support pods")
 	}
+
+	// GenerateKube is gated by the KubeGenerator capability: Docker errors
+	// instead of producing output.
+	if _, err := docker.GenerateKube([]string{"x"}); err == nil {
+		t.Error("Docker GenerateKube should error (capability unsupported)")
+	}
 }

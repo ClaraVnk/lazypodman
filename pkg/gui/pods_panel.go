@@ -23,6 +23,11 @@ func (gui *Gui) getPodsPanel() *panels.SideListPanel[*commands.Pod] {
 						Title:  gui.Tr.ConfigTitle,
 						Render: gui.renderPodConfig,
 					},
+					{
+						Key:    "kube",
+						Title:  gui.Tr.KubeTitle,
+						Render: gui.renderPodKube,
+					},
 				}
 			},
 			GetItemContextCacheKey: func(pod *commands.Pod) string {
@@ -44,6 +49,20 @@ func (gui *Gui) getPodsPanel() *panels.SideListPanel[*commands.Pod] {
 			return !gui.DockerCommand.PodsSupported()
 		},
 	}
+}
+
+// renderPodKube renders the pod's `generate kube` YAML in the main panel.
+func (gui *Gui) renderPodKube(pod *commands.Pod) tasks.TaskFunc {
+	return gui.NewSimpleRenderStringTask(func() string {
+		yaml, err := gui.DockerCommand.GenerateKube([]string{pod.Name})
+		if err != nil {
+			return err.Error()
+		}
+		if len(yaml) == 0 {
+			return gui.Tr.NothingToDisplay
+		}
+		return string(yaml)
+	})
 }
 
 func (gui *Gui) renderPodConfig(pod *commands.Pod) tasks.TaskFunc {
