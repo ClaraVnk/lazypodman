@@ -19,6 +19,7 @@ import (
 	"github.com/jesseduffield/lazydocker/pkg/i18n"
 	"github.com/jesseduffield/lazydocker/pkg/runtime"
 	dockerruntime "github.com/jesseduffield/lazydocker/pkg/runtime/docker"
+	podmanruntime "github.com/jesseduffield/lazydocker/pkg/runtime/podman"
 	"github.com/jesseduffield/lazydocker/pkg/utils"
 	"github.com/sasha-s/go-deadlock"
 	"github.com/sirupsen/logrus"
@@ -26,7 +27,24 @@ import (
 
 const (
 	dockerHostEnvKey = "DOCKER_HOST"
+	// runtimeEnvKey overrides the configured backend ("docker" | "podman").
+	runtimeEnvKey = "LAZYPODMAN_RUNTIME"
 )
+
+// selectBackend resolves which container runtime to use: the
+// LAZYPODMAN_RUNTIME env var wins, then the config `runtime:` field, then
+// the "docker" default. See docs/adr/0005-podman-native-backend.md.
+func selectBackend(config *config.AppConfig) string {
+	if v := strings.TrimSpace(os.Getenv(runtimeEnvKey)); v != "" {
+		return strings.ToLower(v)
+	}
+	if config.UserConfig != nil {
+		if v := strings.TrimSpace(config.UserConfig.Runtime); v != "" {
+			return strings.ToLower(v)
+		}
+	}
+	return "docker"
+}
 
 // DockerCommand is our main docker interface
 type DockerCommand struct {
@@ -83,33 +101,9 @@ func (c *DockerCommand) NewCommandObject(obj CommandObject) CommandObject {
 
 // NewDockerCommand it runs docker commands
 func NewDockerCommand(log *logrus.Entry, osCommand *OSCommand, tr *i18n.TranslationSet, config *config.AppConfig, errorChan chan error) (*DockerCommand, error) {
-	dockerHost, err := dockerruntime.ResolveDockerHost()
+	rt, closers, err := buildRuntime(selectBackend(config), osCommand)
 	if err != nil {
-		ogLog.Printf("> could not determine host %v", err)
-	}
-
-	// NOTE: Inject the determined docker host to the environment. This allows the
-	//       `SSHHandler.HandleSSHDockerHost()` to create a local unix socket tunneled
-	//       over SSH to the specified ssh host.
-	if strings.HasPrefix(dockerHost, "ssh://") {
-		os.Setenv(dockerHostEnvKey, dockerHost)
-	}
-
-	tunnelCloser, err := ssh.NewSSHHandler(osCommand).HandleSSHDockerHost()
-	if err != nil {
-		ogLog.Fatal(err)
-	}
-
-	// Retrieve the docker host from the environment which could have been set by
-	// the `SSHHandler.HandleSSHDockerHost()` and override `dockerHost`.
-	dockerHostFromEnv := os.Getenv(dockerHostEnvKey)
-	if dockerHostFromEnv != "" {
-		dockerHost = dockerHostFromEnv
-	}
-
-	rt, err := dockerruntime.NewWithHost(dockerHost)
-	if err != nil {
-		ogLog.Fatal(err)
+		return nil, err
 	}
 
 	dockerCommand := &DockerCommand{
@@ -120,7 +114,7 @@ func NewDockerCommand(log *logrus.Entry, osCommand *OSCommand, tr *i18n.Translat
 		Runtime:                rt,
 		ErrorChan:              errorChan,
 		InDockerComposeProject: true,
-		Closers:                []io.Closer{tunnelCloser, rt},
+		Closers:                closers,
 	}
 
 	dockerCommand.setDockerComposeCommand(config)
@@ -145,6 +139,50 @@ func NewDockerCommand(log *logrus.Entry, osCommand *OSCommand, tr *i18n.Translat
 	}
 
 	return dockerCommand, nil
+}
+
+// buildRuntime constructs the selected container runtime and the closers
+// that must run on shutdown. The Docker path resolves the host (honoring
+// an SSH tunnel); the Podman path is a scaffold until Phase 3b.
+func buildRuntime(backend string, osCommand *OSCommand) (runtime.ContainerRuntime, []io.Closer, error) {
+	switch backend {
+	case "docker":
+		dockerHost, err := dockerruntime.ResolveDockerHost()
+		if err != nil {
+			ogLog.Printf("> could not determine host %v", err)
+		}
+
+		// NOTE: Inject the determined docker host to the environment. This allows the
+		//       `SSHHandler.HandleSSHDockerHost()` to create a local unix socket tunneled
+		//       over SSH to the specified ssh host.
+		if strings.HasPrefix(dockerHost, "ssh://") {
+			os.Setenv(dockerHostEnvKey, dockerHost)
+		}
+
+		tunnelCloser, err := ssh.NewSSHHandler(osCommand).HandleSSHDockerHost()
+		if err != nil {
+			ogLog.Fatal(err)
+		}
+
+		// Retrieve the docker host from the environment which could have been set by
+		// the `SSHHandler.HandleSSHDockerHost()` and override `dockerHost`.
+		if h := os.Getenv(dockerHostEnvKey); h != "" {
+			dockerHost = h
+		}
+
+		rt, err := dockerruntime.NewWithHost(dockerHost)
+		if err != nil {
+			ogLog.Fatal(err)
+		}
+		return rt, []io.Closer{tunnelCloser, rt}, nil
+
+	case "podman":
+		rt := podmanruntime.New()
+		return rt, []io.Closer{rt}, nil
+
+	default:
+		return nil, nil, fmt.Errorf("unknown runtime %q: set runtime to \"docker\" or \"podman\"", backend)
+	}
 }
 
 // IsProjectScoped reports whether lazydocker should be scoped to a single
