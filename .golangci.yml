@@ -23,5 +23,12 @@ linters-settings:
     max-func-lines: 0
 
 run:
-  go: '1.21'
+  go: '1.25'
   timeout: 10m
+  # Match the Podman client build tags used everywhere else so the linter
+  # analyzes pkg/runtime/podman under the same build configuration.
+  build-tags:
+    - containers_image_openpgp
+    - exclude_graphdriver_btrfs
+    - exclude_graphdriver_devicemapper
+    - remote

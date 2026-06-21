@@ -177,7 +177,10 @@ func buildRuntime(backend string, osCommand *OSCommand) (runtime.ContainerRuntim
 		return rt, []io.Closer{tunnelCloser, rt}, nil
 
 	case "podman":
-		rt := podmanruntime.New()
+		rt, err := podmanruntime.NewFromEnv()
+		if err != nil {
+			ogLog.Fatal(err)
+		}
 		return rt, []io.Closer{rt}, nil
 
 	default:
