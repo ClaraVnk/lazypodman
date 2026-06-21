@@ -2,12 +2,43 @@ package podman
 
 import (
 	"strings"
+	"time"
 
+	handlersTypes "github.com/containers/podman/v5/pkg/api/handlers/types"
 	entitiesTypes "github.com/containers/podman/v5/pkg/domain/entities/types"
 	netTypes "go.podman.io/common/libnetwork/types"
 
 	"github.com/jesseduffield/lazydocker/pkg/domain"
 )
+
+// imageSummaryToDomain converts a Podman ImageSummary to the summary view
+// the GUI list panel renders. Podman reports Created as a Unix timestamp.
+func imageSummaryToDomain(s *entitiesTypes.ImageSummary) domain.ImageInfo {
+	return domain.ImageInfo{
+		ID:          s.ID,
+		ParentID:    s.ParentId,
+		RepoTags:    s.RepoTags,
+		RepoDigests: s.RepoDigests,
+		Created:     time.Unix(s.Created, 0),
+		Size:        s.Size,
+		SharedSize:  int64(s.SharedSize),
+		VirtualSize: s.VirtualSize,
+		Labels:      s.Labels,
+		Containers:  int64(s.Containers),
+	}
+}
+
+// historyToDomain converts one Podman image-history entry to domain.
+func historyToDomain(h *handlersTypes.HistoryResponse) domain.ImageHistoryItem {
+	return domain.ImageHistoryItem{
+		ID:        h.ID,
+		Created:   time.Unix(h.Created, 0),
+		CreatedBy: h.CreatedBy,
+		Size:      h.Size,
+		Comment:   h.Comment,
+		Tags:      h.Tags,
+	}
+}
 
 // listContainerToDomain converts a Podman ListContainer to the summary
 // view the GUI renders.
