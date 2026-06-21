@@ -45,23 +45,7 @@ func (r *Runtime) InspectContainer(ctx context.Context, id string) (domain.Conta
 	return domain.ContainerDetails{}, unsupported("inspect container")
 }
 
-// ----- Images ----- (Phase 3c)
-
-func (r *Runtime) ListImages(ctx context.Context) ([]domain.ImageInfo, error) {
-	return nil, unsupported("list images")
-}
-
-func (r *Runtime) RemoveImage(ctx context.Context, id string, opts runtime.RemoveImageOptions) error {
-	return unsupported("remove image")
-}
-
-func (r *Runtime) ImageHistory(ctx context.Context, id string) ([]domain.ImageHistoryItem, error) {
-	return nil, unsupported("image history")
-}
-
-func (r *Runtime) PruneImages(ctx context.Context) (domain.PruneReport, error) {
-	return domain.PruneReport{}, unsupported("prune images")
-}
+// ----- Images ----- (implemented in image.go)
 
 // ----- Networks ----- (Phase 3d)
 
