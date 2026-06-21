@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"path/filepath"
+	"path"
 	"strings"
 
 	"github.com/containers/podman/v5/pkg/bindings"
@@ -24,7 +24,9 @@ func ResolveSocketURI() string {
 		return h
 	}
 	if xdg := strings.TrimSpace(os.Getenv("XDG_RUNTIME_DIR")); xdg != "" && os.Geteuid() != 0 {
-		return "unix://" + filepath.Join(xdg, "podman", "podman.sock")
+		// path.Join (not filepath.Join) so the socket URI always uses
+		// forward slashes, including on Windows.
+		return "unix://" + path.Join(xdg, "podman", "podman.sock")
 	}
 	return "unix:///run/podman/podman.sock"
 }

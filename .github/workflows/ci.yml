@@ -102,6 +102,10 @@ jobs:
     runs-on: ubuntu-latest
     env:
       GOFLAGS: -mod=vendor -tags=containers_image_openpgp,exclude_graphdriver_btrfs,exclude_graphdriver_devicemapper,remote
+      # Keep golangci-lint's heap in check while it type-checks the large
+      # Podman dependency tree, so it doesn't OOM the 7 GB runner.
+      GOGC: "20"
+      GOMEMLIMIT: 6GiB
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -117,9 +121,9 @@ jobs:
           restore-keys: |
             ${{runner.os}}-go-
       - name: Lint
-        uses: golangci/golangci-lint-action@v6
+        uses: golangci/golangci-lint-action@v9
         with:
-          version: latest
+          version: v2.12.2
       - name: Format code
         run: |
           if [ $(find . ! -path "./vendor/*" -name "*.go" -exec gofmt -s -d {} \;|wc -l) -gt 0 ]; then

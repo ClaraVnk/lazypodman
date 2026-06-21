@@ -220,7 +220,7 @@ func (c *OSCommand) Quote(message string) string {
 // Unquote removes wrapping quotations marks if they are present
 // this is needed for removing quotes from staged filenames with spaces
 func (c *OSCommand) Unquote(message string) string {
-	return strings.Replace(message, `"`, "", -1)
+	return strings.ReplaceAll(message, `"`, "")
 }
 
 // AppendLineToFile adds a new line in file
