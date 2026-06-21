@@ -1,7 +1,7 @@
 # 0005 — Podman native backend (Phase 3)
 
 - **Date** : 2026-06-21
-- **Status** : Proposed
+- **Status** : Accepted (Phase 3a spike validated — see "Spike results")
 - **Relates to** : [ADR 0002 — Port from Docker SDK to Podman bindings](0002-port-docker-sdk-to-podman.md) (implements its Phase 3), [ADR 0003 — Runtime interface and domain types](0003-runtime-interface-and-domain-types.md)
 
 ## Context
@@ -55,14 +55,26 @@ The Podman bindings pull a **large** transitive tree (`containers/common`, `cont
 - Run `govulncheck` (reachable-only, as the existing CI already does for the Docker SDK) and `osv-scanner` on the new tree; extend the allowlist only for unreachable upstream advisories.
 - If the tree proves unacceptable (CGO unavoidable, size explosion, cross-compile breakage), **fall back** to a thin hand-written HTTP client against the documented Podman REST API rather than adopting `pkg/bindings`. This keeps Phase 3 reversible.
 
-Go version: `go.mod` currently declares `go 1.22`. Podman v5 may require a newer toolchain; bump `go.mod` (and CI matrix) only as far as the bindings demand, in the same PR that adds the dependency.
+Go version: `go.mod` currently declares `go 1.22`. Podman v5 forces `go 1.25` (measured); bump `go.mod` and the CI matrix in the same PR that adds the dependency (Phase 3b — see refinement below).
+
+### Spike results (Phase 3a)
+
+The dependency strategy was validated on a throwaway branch against `github.com/containers/podman/v5@v5.8.3`:
+
+- **`CGO_ENABLED=0` builds clean** with tags `containers_image_openpgp exclude_graphdriver_btrfs exclude_graphdriver_devicemapper remote` — no CGO, no system libs. The thin-HTTP-client fallback is therefore **not** needed.
+- Footprint: **+73 modules**, ~535 non-stdlib packages, ~54 MB of new sources (`containers` 32M + `go.podman.io` 14M + `opencontainers` 7.6M). Forces `go 1.22 → 1.25`.
+- `govulncheck -scan module` (upper bound, no reachability): 7 advisories — 3 stdlib (toolchain bump), 1 windows-only `x/sys`, 3 in `docker/docker`+`docker/cli` already present in the tree and already allowlisted in CI. **No net-new vulnerability from the Podman bindings.**
+
+**Version choice**: target **v5.8.3** (latest stable v5, aligned with the 5.x daemon ecosystem). The module is deprecated in favour of `go.podman.io/podman/v6`, but **v6 has no stable release yet** (only `v6.0.0-rc1`), so the migration to the `go.podman.io` path is deferred until v6 is GA.
+
+**Refinement vs the sub-PR sketch below**: the dependency (and the `go 1.25` bump) is deferred from 3a to **3b**, where the first real method group needs a live connection. 3a ships dependency-free scaffolding, keeping its branch tip green with no dead dependency.
 
 ### Staged sub-PRs
 
 Mirroring the Phase 1d split — each independently buildable, with the Docker backend untouched and default:
 
-- **3a — Spike + scaffolding.** Validate the dependency strategy above (build tags, CGO off, size, vuln scan) on a throwaway branch; then land `pkg/runtime/podman` with `connect.go`, the empty `Runtime` satisfying the interface via `runtime.ErrUnsupported` stubs, the config field, env override and factory. Default stays docker; podman backend selectable but non-functional. Ships the dependency + CI changes in isolation.
-- **3b — Containers.** List/Inspect/Start/Stop/Restart/Pause/Unpause/Remove/Top/Prune + mapper.
+- **3a — Spike + scaffolding (done).** Validated the dependency strategy on a throwaway branch (see "Spike results"), then landed `pkg/runtime/podman` with the `Runtime` satisfying the interface via `runtime.ErrUnsupported` stubs, the config field, env override and factory. Default stays docker; podman backend selectable but non-functional. **Dependency-free** — the bindings land in 3b.
+- **3b — Containers + dependency.** Add the `go.podman.io`/`containers/podman/v5` dependency (vendored, `go 1.25` bump, CI build tags), `connect.go` (bindings connection + `CONTAINER_HOST`/rootless/rootful resolution), and the first real method group: List/Inspect/Start/Stop/Restart/Pause/Unpause/Remove/Top/Prune + mapper.
 - **3c — Images.** List/Remove/History/Prune + mapper.
 - **3d — Networks + Volumes.** List/Remove/Prune + mappers.
 - **3e — Events, Stats, Logs.** Event stream → `domain.Event`; stats stream → `domain.Stats`; log stream demux (Podman multiplexes differently from Docker — verify the framing).
