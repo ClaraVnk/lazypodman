@@ -15,6 +15,7 @@ package compliance
 
 import (
 	"context"
+	"errors"
 	"os"
 	"testing"
 	"time"
@@ -39,6 +40,16 @@ func TestCompliance(t *testing.T) {
 		rt, err := build()
 		if err != nil {
 			t.Logf("%s: backend unavailable, skipping (%v)", name, err)
+			continue
+		}
+		// Construction is lazy for both backends, so probe the socket and
+		// skip the backend when the engine is not reachable.
+		probeCtx, probeCancel := context.WithTimeout(context.Background(), 5*time.Second)
+		_, probeErr := rt.ListContainers(probeCtx)
+		probeCancel()
+		if errors.Is(probeErr, runtime.ErrUnavailable) {
+			rt.Close()
+			t.Logf("%s: socket unreachable, skipping (%v)", name, probeErr)
 			continue
 		}
 		ran++
