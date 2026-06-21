@@ -94,6 +94,17 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
   <kbd>/</kbd>: filter list
 </pre>
 
+## 
+
+<pre>
+  <kbd>d</kbd>: remove pod
+  <kbd>b</kbd>: view bulk commands
+  <kbd>enter</kbd>: skup na głównym panelu
+  <kbd>[</kbd>: poprzednia zakładka
+  <kbd>]</kbd>: następna zakładka
+  <kbd>/</kbd>: filter list
+</pre>
+
 ## Główne
 
 <pre>
@@ -111,4 +122,5 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
   <kbd>4</kbd>: focus images panel
   <kbd>5</kbd>: focus volumes panel
   <kbd>6</kbd>: focus networks panel
+  <kbd>7</kbd>: focus pods panel
 </pre>

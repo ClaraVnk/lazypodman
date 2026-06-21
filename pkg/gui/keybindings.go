@@ -431,6 +431,20 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 			Description: gui.Tr.ViewBulkCommands,
 		},
 		{
+			ViewName:    "pods",
+			Key:         'd',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.handlePodsRemoveMenu,
+			Description: gui.Tr.RemovePod,
+		},
+		{
+			ViewName:    "pods",
+			Key:         'b',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.handlePodsBulkCommand,
+			Description: gui.Tr.ViewBulkCommands,
+		},
+		{
 			ViewName:    "main",
 			Key:         gocui.KeyEsc,
 			Modifier:    gocui.ModNone,
@@ -541,6 +555,7 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 		{Handler: gui.handleGoTo(gui.Panels.Images.View), Key: '4', Description: gui.Tr.FocusImages},
 		{Handler: gui.handleGoTo(gui.Panels.Volumes.View), Key: '5', Description: gui.Tr.FocusVolumes},
 		{Handler: gui.handleGoTo(gui.Panels.Networks.View), Key: '6', Description: gui.Tr.FocusNetworks},
+		{Handler: gui.handleGoTo(gui.Panels.Pods.View), Key: '7', Description: gui.Tr.FocusPods},
 	}...)
 
 	for _, panel := range gui.allListPanels() {
