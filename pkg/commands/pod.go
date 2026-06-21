@@ -2,6 +2,7 @@ package commands
 
 import (
 	"context"
+	"errors"
 
 	"github.com/jesseduffield/lazydocker/pkg/domain"
 	"github.com/jesseduffield/lazydocker/pkg/runtime"
@@ -64,4 +65,15 @@ func (c *DockerCommand) PrunePods() error {
 // Remove removes the pod and its containers.
 func (p *Pod) Remove(force bool) error {
 	return p.Runtime.RemovePod(context.Background(), p.Pod.ID, force)
+}
+
+// GenerateKube exports the named pods/containers as Kubernetes YAML. It
+// errors if the active runtime does not implement the KubeGenerator
+// capability (e.g. the Docker backend).
+func (c *DockerCommand) GenerateKube(names []string) ([]byte, error) {
+	kg, ok := c.Runtime.(runtime.KubeGenerator)
+	if !ok {
+		return nil, errors.New("the active runtime does not support generate kube")
+	}
+	return kg.GenerateKube(context.Background(), names)
 }

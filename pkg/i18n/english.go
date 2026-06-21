@@ -117,6 +117,7 @@ type TranslationSet struct {
 
 	LogsTitle                   string
 	ConfigTitle                 string
+	KubeTitle                   string
 	EnvTitle                    string
 	DockerComposeConfigTitle    string
 	StatsTitle                  string
@@ -241,6 +242,7 @@ func englishSet() TranslationSet {
 		ErrorTitle:                  "Error",
 		LogsTitle:                   "Logs",
 		ConfigTitle:                 "Config",
+		KubeTitle:                   "Kube",
 		EnvTitle:                    "Env",
 		DockerComposeConfigTitle:    "Docker-Compose Config",
 		TopTitle:                    "Top",
