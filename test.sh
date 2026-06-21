@@ -3,7 +3,10 @@
 set -e
 echo "" > coverage.txt
 
-export GOFLAGS=-mod=vendor
+# Podman client build tags — without `remote` the bindings pull the local
+# libpod tree (cgo, btrfs, unix-only rlimit) and the build breaks. See
+# docs/adr/0005-podman-native-backend.md.
+export GOFLAGS="-mod=vendor -tags=containers_image_openpgp,exclude_graphdriver_btrfs,exclude_graphdriver_devicemapper,remote"
 
 use_go_test=false
 if command -v gotest; then
