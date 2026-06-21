@@ -12,7 +12,11 @@ import (
 
 // ListImages returns the final (non-intermediate) images known to Podman.
 func (r *Runtime) ListImages(ctx context.Context) ([]domain.ImageInfo, error) {
-	list, err := images.List(r.conn, new(images.ListOptions).WithAll(false))
+	conn, err := r.client()
+	if err != nil {
+		return nil, err
+	}
+	list, err := images.List(conn, new(images.ListOptions).WithAll(false))
 	if err != nil {
 		return nil, mapErr("list images", err)
 	}
@@ -29,14 +33,22 @@ func (r *Runtime) ListImages(ctx context.Context) ([]domain.ImageInfo, error) {
 // RemoveImage deletes a single image. Podman's Remove takes a slice and
 // returns a slice of errors, which we join.
 func (r *Runtime) RemoveImage(ctx context.Context, id string, opts runtime.RemoveImageOptions) error {
+	conn, err := r.client()
+	if err != nil {
+		return err
+	}
 	o := new(images.RemoveOptions).WithForce(opts.Force)
-	_, errs := images.Remove(r.conn, []string{id}, o)
+	_, errs := images.Remove(conn, []string{id}, o)
 	return mapErr("remove image", errors.Join(errs...))
 }
 
 // ImageHistory returns the build history of an image.
 func (r *Runtime) ImageHistory(ctx context.Context, id string) ([]domain.ImageHistoryItem, error) {
-	hist, err := images.History(r.conn, id, nil)
+	conn, err := r.client()
+	if err != nil {
+		return nil, err
+	}
+	hist, err := images.History(conn, id, nil)
 	if err != nil {
 		return nil, mapErr("image history", err)
 	}
@@ -52,7 +64,11 @@ func (r *Runtime) ImageHistory(ctx context.Context, id string) ([]domain.ImageHi
 
 // PruneImages removes dangling images.
 func (r *Runtime) PruneImages(ctx context.Context) (domain.PruneReport, error) {
-	reps, err := images.Prune(r.conn, nil)
+	conn, err := r.client()
+	if err != nil {
+		return domain.PruneReport{}, err
+	}
+	reps, err := images.Prune(conn, nil)
 	if err != nil {
 		return domain.PruneReport{}, mapErr("prune images", err)
 	}

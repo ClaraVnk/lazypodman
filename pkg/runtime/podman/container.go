@@ -13,7 +13,11 @@ import (
 
 // ListContainers returns every container (running and stopped).
 func (r *Runtime) ListContainers(ctx context.Context) ([]domain.ContainerInfo, error) {
-	list, err := containers.List(r.conn, new(containers.ListOptions).WithAll(true))
+	conn, err := r.client()
+	if err != nil {
+		return nil, err
+	}
+	list, err := containers.List(conn, new(containers.ListOptions).WithAll(true))
 	if err != nil {
 		return nil, mapErr("list containers", err)
 	}
@@ -26,7 +30,11 @@ func (r *Runtime) ListContainers(ctx context.Context) ([]domain.ContainerInfo, e
 
 // InspectContainer returns the full detail view of a container.
 func (r *Runtime) InspectContainer(ctx context.Context, id string) (domain.ContainerDetails, error) {
-	data, err := containers.Inspect(r.conn, id, nil)
+	conn, err := r.client()
+	if err != nil {
+		return domain.ContainerDetails{}, err
+	}
+	data, err := containers.Inspect(conn, id, nil)
 	if err != nil {
 		return domain.ContainerDetails{}, mapErr("inspect container", err)
 	}
@@ -37,43 +45,71 @@ func (r *Runtime) InspectContainer(ctx context.Context, id string) (domain.Conta
 }
 
 func (r *Runtime) StartContainer(ctx context.Context, id string) error {
-	return mapErr("start container", containers.Start(r.conn, id, nil))
+	conn, err := r.client()
+	if err != nil {
+		return err
+	}
+	return mapErr("start container", containers.Start(conn, id, nil))
 }
 
 func (r *Runtime) StopContainer(ctx context.Context, id string, timeout *time.Duration) error {
+	conn, err := r.client()
+	if err != nil {
+		return err
+	}
 	opts := new(containers.StopOptions)
 	if timeout != nil {
 		opts = opts.WithTimeout(uint(timeout.Seconds()))
 	}
-	return mapErr("stop container", containers.Stop(r.conn, id, opts))
+	return mapErr("stop container", containers.Stop(conn, id, opts))
 }
 
 func (r *Runtime) RestartContainer(ctx context.Context, id string, timeout *time.Duration) error {
+	conn, err := r.client()
+	if err != nil {
+		return err
+	}
 	opts := new(containers.RestartOptions)
 	if timeout != nil {
 		opts = opts.WithTimeout(int(timeout.Seconds()))
 	}
-	return mapErr("restart container", containers.Restart(r.conn, id, opts))
+	return mapErr("restart container", containers.Restart(conn, id, opts))
 }
 
 func (r *Runtime) PauseContainer(ctx context.Context, id string) error {
-	return mapErr("pause container", containers.Pause(r.conn, id, nil))
+	conn, err := r.client()
+	if err != nil {
+		return err
+	}
+	return mapErr("pause container", containers.Pause(conn, id, nil))
 }
 
 func (r *Runtime) UnpauseContainer(ctx context.Context, id string) error {
-	return mapErr("unpause container", containers.Unpause(r.conn, id, nil))
+	conn, err := r.client()
+	if err != nil {
+		return err
+	}
+	return mapErr("unpause container", containers.Unpause(conn, id, nil))
 }
 
 func (r *Runtime) RemoveContainer(ctx context.Context, id string, opts runtime.RemoveContainerOptions) error {
+	conn, err := r.client()
+	if err != nil {
+		return err
+	}
 	o := new(containers.RemoveOptions).WithForce(opts.Force).WithVolumes(opts.RemoveVolumes)
-	_, err := containers.Remove(r.conn, id, o)
+	_, err = containers.Remove(conn, id, o)
 	return mapErr("remove container", err)
 }
 
 // ContainerTop returns the container's process table. Podman returns the
 // table as lines of tab-separated columns, the first line being headers.
 func (r *Runtime) ContainerTop(ctx context.Context, id string) (domain.TopOutput, error) {
-	lines, err := containers.Top(r.conn, id, nil)
+	conn, err := r.client()
+	if err != nil {
+		return domain.TopOutput{}, err
+	}
+	lines, err := containers.Top(conn, id, nil)
 	if err != nil {
 		return domain.TopOutput{}, mapErr("container top", err)
 	}
@@ -81,7 +117,11 @@ func (r *Runtime) ContainerTop(ctx context.Context, id string) (domain.TopOutput
 }
 
 func (r *Runtime) PruneContainers(ctx context.Context) (domain.PruneReport, error) {
-	reps, err := containers.Prune(r.conn, nil)
+	conn, err := r.client()
+	if err != nil {
+		return domain.PruneReport{}, err
+	}
+	reps, err := containers.Prune(conn, nil)
 	if err != nil {
 		return domain.PruneReport{}, mapErr("prune containers", err)
 	}
