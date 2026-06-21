@@ -26,7 +26,7 @@ jobs:
         run: go install golang.org/x/vuln/cmd/govulncheck@latest
       - name: Run govulncheck with allowlist filter
         env:
-          GOFLAGS: -mod=vendor
+          GOFLAGS: -mod=vendor -tags=containers_image_openpgp,exclude_graphdriver_btrfs,exclude_graphdriver_devicemapper,remote
         run: |
           set -uo pipefail
 

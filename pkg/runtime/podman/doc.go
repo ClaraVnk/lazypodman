@@ -2,11 +2,13 @@
 // runtime.ContainerRuntime, built on Podman's Go bindings
 // (github.com/containers/podman/v5/pkg/bindings).
 //
-// Phase 3a (this code) ships the scaffolding only: a Runtime that
-// satisfies the interface but reports runtime.ErrUnsupported for every
-// operation, plus the config/env plumbing that lets a user select it.
-// The bindings dependency and the real connection setup land in Phase 3b
-// alongside the first implemented method group, so the heavy dependency
-// tree is not pulled in until it is actually used. See
+// The container method group is implemented (Phase 3b); the image,
+// network, volume, event, stats and log groups land in Phases 3c–3e and
+// report runtime.ErrUnsupported until then. Backend selection lives in
+// pkg/commands (config `runtime:` / LAZYPODMAN_RUNTIME). See
 // docs/adr/0005-podman-native-backend.md.
+//
+// The package builds CGO-free with the standard Podman client build tags
+// (containers_image_openpgp, exclude_graphdriver_btrfs,
+// exclude_graphdriver_devicemapper, remote).
 package podman

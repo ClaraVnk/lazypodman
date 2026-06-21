@@ -1,6 +1,6 @@
 ARG BASE_IMAGE_BUILDER=golang
 ARG ALPINE_VERSION=3.20
-ARG GO_VERSION=1.23
+ARG GO_VERSION=1.26
 
 FROM ${BASE_IMAGE_BUILDER}:${GO_VERSION}-alpine${ALPINE_VERSION} AS builder
 ARG GOARCH=amd64
@@ -11,6 +11,7 @@ WORKDIR /tmp/gobuild
 COPY ./ .
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=${GOARCH} GOARM=${GOARM} \
     go build -a -mod=vendor \
+    -tags=containers_image_openpgp,exclude_graphdriver_btrfs,exclude_graphdriver_devicemapper,remote \
     -ldflags="-s -w \
     -X main.commit=${VCS_REF} \
     -X main.version=${VERSION} \

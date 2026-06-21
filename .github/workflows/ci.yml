@@ -1,7 +1,11 @@
 name: Continuous Integration
 
 env:
-  GO_VERSION: 1.24
+  GO_VERSION: 1.26
+  # Podman client build tags: build the bindings tree CGO-free, without the
+  # storage graph drivers that need C libraries. See
+  # docs/adr/0005-podman-native-backend.md.
+  GOFLAGS: -mod=vendor -tags=containers_image_openpgp,exclude_graphdriver_btrfs,exclude_graphdriver_devicemapper,remote
 
 on:
   push:
@@ -20,14 +24,14 @@ jobs:
     name: ci - ${{matrix.os}}
     runs-on: ${{matrix.os}}
     env:
-      GOFLAGS: -mod=vendor
+      GOFLAGS: -mod=vendor -tags=containers_image_openpgp,exclude_graphdriver_btrfs,exclude_graphdriver_devicemapper,remote
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
       - name: Setup Go
         uses: actions/setup-go@v6
         with:
-          go-version: 1.24.x
+          go-version: 1.26.x
       - name: Cache build
         uses: actions/cache@v4
         with:
@@ -41,7 +45,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      GOFLAGS: -mod=vendor
+      GOFLAGS: -mod=vendor -tags=containers_image_openpgp,exclude_graphdriver_btrfs,exclude_graphdriver_devicemapper,remote
       GOARCH: amd64
     steps:
       - name: Checkout code
@@ -49,7 +53,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v6
         with:
-          go-version: 1.24.x
+          go-version: 1.26.x
       - name: Cache build
         uses: actions/cache@v4
         with:
@@ -69,7 +73,7 @@ jobs:
   check-codebase:
     runs-on: ubuntu-latest
     env:
-      GOFLAGS: -mod=vendor
+      GOFLAGS: -mod=vendor -tags=containers_image_openpgp,exclude_graphdriver_btrfs,exclude_graphdriver_devicemapper,remote
       GOARCH: amd64
     steps:
       - name: Checkout code
@@ -77,7 +81,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v6
         with:
-          go-version: 1.24.x
+          go-version: 1.26.x
       - name: Cache build
         uses: actions/cache@v4
         with:
@@ -97,14 +101,18 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     env:
-      GOFLAGS: -mod=vendor
+      GOFLAGS: -mod=vendor -tags=containers_image_openpgp,exclude_graphdriver_btrfs,exclude_graphdriver_devicemapper,remote
+      # Keep golangci-lint's heap in check while it type-checks the large
+      # Podman dependency tree, so it doesn't OOM the 7 GB runner.
+      GOGC: "20"
+      GOMEMLIMIT: 6GiB
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
       - name: Setup Go
         uses: actions/setup-go@v6
         with:
-          go-version: 1.24.x
+          go-version: 1.26.x
       - name: Cache build
         uses: actions/cache@v4
         with:
@@ -113,9 +121,9 @@ jobs:
           restore-keys: |
             ${{runner.os}}-go-
       - name: Lint
-        uses: golangci/golangci-lint-action@v6
+        uses: golangci/golangci-lint-action@v9
         with:
-          version: latest
+          version: v2.12.2
       - name: Format code
         run: |
           if [ $(find . ! -path "./vendor/*" -name "*.go" -exec gofmt -s -d {} \;|wc -l) -gt 0 ]; then

@@ -1,0 +1,17 @@
+# gitleaks configuration for lazypodman.
+#
+# We extend the default ruleset but allowlist the vendor/ directory: it
+# holds third-party dependency source we do not author, and its constants
+# and test fixtures trip generic high-entropy rules (e.g. a `sbKeyType`
+# string constant in the Podman image signature package). Our own code is
+# still scanned in full.
+title = "lazypodman"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Ignore vendored third-party dependencies"
+paths = [
+  '''^vendor/''',
+]

@@ -6,6 +6,10 @@ This file lists vulnerabilities flagged by `govulncheck` that we have reviewed a
 |---|---|---|---|---|
 | [GO-2026-4887](https://pkg.go.dev/vuln/GO-2026-4887) | `github.com/docker/docker` | `v28.5.2+incompatible` | No upstream fix | Reachable from `pkg/commands` (Docker SDK). Will be eliminated when the Docker SDK is removed in [ADR 0002, Phase 6](../adr/0002-port-docker-sdk-to-podman.md#phase-6--drop-the-docker-backend-rename-module-path). |
 | [GO-2026-4883](https://pkg.go.dev/vuln/GO-2026-4883) | `github.com/docker/docker` | `v28.5.2+incompatible` | No upstream fix | Same as above — reachable via the inherited Docker SDK code path. |
+| [GO-2025-3961](https://pkg.go.dev/vuln/GO-2025-3961) | `github.com/containers/podman/v5` | `v5.8.3` | No upstream fix | Reachable through the Podman bindings added in [ADR 0005](../adr/0005-podman-native-backend.md). No fix in the latest stable v5; tracked upstream. |
+| [GO-2024-3042](https://pkg.go.dev/vuln/GO-2024-3042) | `github.com/containers/podman/v5` | `v5.8.3` | No upstream fix | Same as above — reachable via the Podman bindings tree; no fix in v5.8.3. |
+| [GO-2026-5037](https://pkg.go.dev/vuln/GO-2026-5037) | stdlib (`crypto/x509`) | `go1.26.3` | Fixed in go1.26.4 | Toolchain vulnerability, not a dependency. Accepted only until the CI toolchain ships ≥ go1.26.4, then drop. |
+| [GO-2026-5039](https://pkg.go.dev/vuln/GO-2026-5039) | stdlib (`net/textproto`) | `go1.26.3` | Fixed in go1.26.4 | Same as above — fixed by a toolchain bump to go1.26.4; remove once CI runs it. |
 
 ## How the allowlist works
 

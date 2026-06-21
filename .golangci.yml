@@ -1,27 +1,54 @@
+version: "2"
+run:
+  go: "1.25"
+  build-tags:
+    - containers_image_openpgp
+    - exclude_graphdriver_btrfs
+    - exclude_graphdriver_devicemapper
+    - remote
 linters:
   enable:
-    - gofumpt
-    - thelper
-    - goimports
-    - tparallel
-    - wastedassign
-    - unparam
-    - prealloc
-    - unconvert
     - exhaustive
     - makezero
     - nakedret
-    # - goconst # TODO: enable and fix issues
-  fast: false
-
-linters-settings:
-  exhaustive:
-    default-signifies-exhaustive: true
-
-  nakedret:
-    # the gods will judge me but I just don't like naked returns at all
-    max-func-lines: 0
-
-run:
-  go: '1.21'
-  timeout: 10m
+    - prealloc
+    - thelper
+    - tparallel
+    - unconvert
+    - unparam
+    - wastedassign
+  settings:
+    exhaustive:
+      default-signifies-exhaustive: true
+    nakedret:
+      max-func-lines: 0
+    staticcheck:
+      # golangci-lint v2 folds stylecheck (ST*) and quickfix (QF*) into the
+      # staticcheck linter and enables them by default. v1 did not run those
+      # categories, so disable them to keep the migration behavior-preserving
+      # rather than churn the whole legacy codebase for stylistic nits.
+      checks:
+        - all
+        - -ST1*
+        - -QF1*
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
+formatters:
+  enable:
+    - gofumpt
+    - goimports
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$

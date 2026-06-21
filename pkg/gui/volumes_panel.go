@@ -184,7 +184,9 @@ func (gui *Gui) handleVolumesBulkCommand(g *gocui.Gui, v *gocui.View) error {
 		},
 	}
 
-	bulkCommands := append(baseBulkCommands, gui.Config.UserConfig.BulkCommands.Volumes...)
+	bulkCommands := make([]config.CustomCommand, 0, len(baseBulkCommands)+len(gui.Config.UserConfig.BulkCommands.Volumes))
+	bulkCommands = append(bulkCommands, baseBulkCommands...)
+	bulkCommands = append(bulkCommands, gui.Config.UserConfig.BulkCommands.Volumes...)
 	commandObject := gui.DockerCommand.NewCommandObject(commands.CommandObject{})
 
 	return gui.createBulkCommandMenu(bulkCommands, commandObject)
