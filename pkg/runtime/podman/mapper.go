@@ -28,6 +28,62 @@ func imageSummaryToDomain(s *entitiesTypes.ImageSummary) domain.ImageInfo {
 	}
 }
 
+// networkToDomain converts a Podman (libnetwork) network to the GUI view.
+// Podman networks are always local-scoped; the swarm-only Attachable and
+// Ingress flags do not apply, and attached containers are only available
+// via Inspect (not List), so Containers is left empty here.
+func networkToDomain(n netTypes.Network) domain.NetworkInfo {
+	return domain.NetworkInfo{
+		ID:         n.ID,
+		Name:       n.Name,
+		Driver:     n.Driver,
+		Scope:      domain.NetworkScopeLocal,
+		Created:    n.Created,
+		IPAM:       subnetsToIPAM(n.Subnets, n.IPAMOptions),
+		Internal:   n.Internal,
+		EnableIPv6: n.IPv6Enabled,
+		Labels:     n.Labels,
+		Options:    n.Options,
+	}
+}
+
+func subnetsToIPAM(subnets []netTypes.Subnet, options map[string]string) domain.IPAM {
+	ipam := domain.IPAM{
+		Driver:  options["driver"],
+		Options: options,
+	}
+	for _, s := range subnets {
+		cfg := domain.IPAMConfig{Subnet: s.Subnet.String()}
+		if len(s.Gateway) > 0 {
+			cfg.Gateway = s.Gateway.String()
+		}
+		ipam.Config = append(ipam.Config, cfg)
+	}
+	return ipam
+}
+
+// volumeReportToDomain converts a Podman volume list entry to the GUI view.
+// Podman does not report usage data in the list, so UsageData stays nil.
+func volumeReportToDomain(v *entitiesTypes.VolumeListReport) domain.VolumeInfo {
+	return domain.VolumeInfo{
+		Name:       v.Name,
+		Driver:     v.Driver,
+		Mountpoint: v.Mountpoint,
+		Scope:      mapVolumeScope(v.Scope),
+		CreatedAt:  v.CreatedAt,
+		Labels:     v.Labels,
+		Options:    v.Options,
+		Status:     v.Status,
+	}
+}
+
+func mapVolumeScope(s string) domain.VolumeScope {
+	if strings.EqualFold(s, "global") {
+		return domain.VolumeScopeGlobal
+	}
+	return domain.VolumeScopeLocal
+}
+
 // historyToDomain converts one Podman image-history entry to domain.
 func historyToDomain(h *handlersTypes.HistoryResponse) domain.ImageHistoryItem {
 	return domain.ImageHistoryItem{

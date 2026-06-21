@@ -47,33 +47,9 @@ func (r *Runtime) InspectContainer(ctx context.Context, id string) (domain.Conta
 
 // ----- Images ----- (implemented in image.go)
 
-// ----- Networks ----- (Phase 3d)
+// ----- Networks ----- (implemented in network.go)
 
-func (r *Runtime) ListNetworks(ctx context.Context) ([]domain.NetworkInfo, error) {
-	return nil, unsupported("list networks")
-}
-
-func (r *Runtime) RemoveNetwork(ctx context.Context, id string) error {
-	return unsupported("remove network")
-}
-
-func (r *Runtime) PruneNetworks(ctx context.Context) (domain.PruneReport, error) {
-	return domain.PruneReport{}, unsupported("prune networks")
-}
-
-// ----- Volumes ----- (Phase 3d)
-
-func (r *Runtime) ListVolumes(ctx context.Context) ([]domain.VolumeInfo, error) {
-	return nil, unsupported("list volumes")
-}
-
-func (r *Runtime) RemoveVolume(ctx context.Context, name string, force bool) error {
-	return unsupported("remove volume")
-}
-
-func (r *Runtime) PruneVolumes(ctx context.Context) (domain.PruneReport, error) {
-	return domain.PruneReport{}, unsupported("prune volumes")
-}
+// ----- Volumes ----- (implemented in volume.go)
 
 // ----- Logs / Stats / Attach ----- (Phase 3e)
 
