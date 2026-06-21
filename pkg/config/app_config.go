@@ -28,6 +28,11 @@ type UserConfig struct {
 	// hide things
 	Gui GuiConfig `yaml:"gui,omitempty"`
 
+	// Runtime selects the container engine backend: "docker" (default) or
+	// "podman". The LAZYPODMAN_RUNTIME environment variable overrides this.
+	// See docs/adr/0005-podman-native-backend.md.
+	Runtime string `yaml:"runtime,omitempty"`
+
 	// ConfirmOnQuit when enabled prompts you to confirm you want to quit when you
 	// hit esc or q when no confirmation panels are open
 	ConfirmOnQuit bool `yaml:"confirmOnQuit,omitempty"`

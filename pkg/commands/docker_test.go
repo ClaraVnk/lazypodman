@@ -7,6 +7,34 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// TestSelectBackend covers the runtime selection precedence:
+// LAZYPODMAN_RUNTIME env > config `runtime:` > "docker" default.
+func TestSelectBackend(t *testing.T) {
+	cases := []struct {
+		name      string
+		env       string
+		cfgValue  string
+		nilConfig bool
+		want      string
+	}{
+		{"default when nothing set", "", "", false, "docker"},
+		{"config selects podman", "", "podman", false, "podman"},
+		{"env overrides config", "docker", "podman", false, "docker"},
+		{"env wins, trimmed and lowercased", "  Podman  ", "docker", false, "podman"},
+		{"nil UserConfig falls back to default", "", "", true, "docker"},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Setenv(runtimeEnvKey, tc.env)
+			cfg := &config.AppConfig{UserConfig: &config.UserConfig{Runtime: tc.cfgValue}}
+			if tc.nilConfig {
+				cfg = &config.AppConfig{}
+			}
+			assert.Equal(t, tc.want, selectBackend(cfg))
+		})
+	}
+}
+
 // TestIsProjectScoped covers the predicate that drives whether the
 // project/services panels appear and whether the containers panel filters by
 // project. The "outside compose dir + -p" case is the regression we fixed
