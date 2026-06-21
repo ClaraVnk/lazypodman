@@ -1,7 +1,7 @@
 # 0005 — Podman native backend (Phase 3)
 
 - **Date** : 2026-06-21
-- **Status** : Accepted (Phase 3a spike validated — see "Spike results")
+- **Status** : Accepted — Phase 3 implemented (all method groups except SDK-native attach) and the default backend flipped to Podman (ADR 0002 Phase 4), gated by the dual-backend compliance suite
 - **Relates to** : [ADR 0002 — Port from Docker SDK to Podman bindings](0002-port-docker-sdk-to-podman.md) (implements its Phase 3), [ADR 0003 — Runtime interface and domain types](0003-runtime-interface-and-domain-types.md)
 
 ## Context

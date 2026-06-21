@@ -28,8 +28,8 @@ type UserConfig struct {
 	// hide things
 	Gui GuiConfig `yaml:"gui,omitempty"`
 
-	// Runtime selects the container engine backend: "docker" (default) or
-	// "podman". The LAZYPODMAN_RUNTIME environment variable overrides this.
+	// Runtime selects the container engine backend: "podman" (default) or
+	// "docker". The LAZYPODMAN_RUNTIME environment variable overrides this.
 	// See docs/adr/0005-podman-native-backend.md.
 	Runtime string `yaml:"runtime,omitempty"`
 

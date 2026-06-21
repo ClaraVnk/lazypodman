@@ -33,7 +33,8 @@ const (
 
 // selectBackend resolves which container runtime to use: the
 // LAZYPODMAN_RUNTIME env var wins, then the config `runtime:` field, then
-// the "docker" default. See docs/adr/0005-podman-native-backend.md.
+// the "podman" default. Docker stays available as an explicit fallback
+// (runtime: docker). See docs/adr/0005-podman-native-backend.md.
 func selectBackend(config *config.AppConfig) string {
 	if v := strings.TrimSpace(os.Getenv(runtimeEnvKey)); v != "" {
 		return strings.ToLower(v)
@@ -43,7 +44,7 @@ func selectBackend(config *config.AppConfig) string {
 			return strings.ToLower(v)
 		}
 	}
-	return "docker"
+	return "podman"
 }
 
 // DockerCommand is our main docker interface
