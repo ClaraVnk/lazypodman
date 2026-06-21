@@ -14,7 +14,11 @@ import (
 // sample, so we carry the prior report forward as PreCPU, letting the GUI
 // compute the percentage with the same delta formula it uses for Docker.
 func (r *Runtime) ContainerStats(ctx context.Context, id string) (<-chan domain.Stats, error) {
-	reports, err := containers.Stats(r.conn, []string{id}, new(containers.StatsOptions).WithStream(true))
+	conn, err := r.client()
+	if err != nil {
+		return nil, err
+	}
+	reports, err := containers.Stats(conn, []string{id}, new(containers.StatsOptions).WithStream(true))
 	if err != nil {
 		return nil, mapErr("container stats", err)
 	}

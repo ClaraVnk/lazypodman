@@ -28,12 +28,17 @@ func (r *Runtime) ContainerLogs(ctx context.Context, id string, opts runtime.Log
 		o = o.WithUntil(opts.Until)
 	}
 
+	conn, err := r.client()
+	if err != nil {
+		return nil, err
+	}
+
 	stdoutCh := make(chan string, 64)
 	stderrCh := make(chan string, 64)
 	pr, pw := io.Pipe()
-	// Derive from r.conn so the call keeps the bindings client but can be
-	// cancelled when the reader is closed.
-	logCtx, cancel := context.WithCancel(r.conn)
+	// Derive from the connection context so the call keeps the bindings
+	// client but can be cancelled when the reader is closed.
+	logCtx, cancel := context.WithCancel(conn)
 
 	// Producer: the blocking Logs call. It does not close the line
 	// channels, so we do once it returns.

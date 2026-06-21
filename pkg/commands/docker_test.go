@@ -8,7 +8,7 @@ import (
 )
 
 // TestSelectBackend covers the runtime selection precedence:
-// LAZYPODMAN_RUNTIME env > config `runtime:` > "docker" default.
+// LAZYPODMAN_RUNTIME env > config `runtime:` > "podman" default.
 func TestSelectBackend(t *testing.T) {
 	cases := []struct {
 		name      string
@@ -17,11 +17,11 @@ func TestSelectBackend(t *testing.T) {
 		nilConfig bool
 		want      string
 	}{
-		{"default when nothing set", "", "", false, "docker"},
-		{"config selects podman", "", "podman", false, "podman"},
-		{"env overrides config", "docker", "podman", false, "docker"},
-		{"env wins, trimmed and lowercased", "  Podman  ", "docker", false, "podman"},
-		{"nil UserConfig falls back to default", "", "", true, "docker"},
+		{"default when nothing set", "", "", false, "podman"},
+		{"config selects docker", "", "docker", false, "docker"},
+		{"env overrides config", "podman", "docker", false, "podman"},
+		{"env wins, trimmed and lowercased", "  Docker  ", "podman", false, "docker"},
+		{"nil UserConfig falls back to default", "", "", true, "podman"},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {

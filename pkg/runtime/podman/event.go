@@ -20,6 +20,14 @@ func (r *Runtime) Events(ctx context.Context, since time.Time) (<-chan domain.Ev
 	events := make(chan domain.Event)
 	errs := make(chan error, 1)
 
+	conn, err := r.client()
+	if err != nil {
+		errs <- err
+		close(events)
+		close(errs)
+		return events, errs
+	}
+
 	src := make(chan entitiesTypes.Event)
 	cancel := make(chan bool, 1)
 	streamErr := make(chan error, 1)
@@ -31,7 +39,7 @@ func (r *Runtime) Events(ctx context.Context, since time.Time) (<-chan domain.Ev
 
 	go func() {
 		// system.Events closes src on return.
-		streamErr <- system.Events(r.conn, src, cancel, opts)
+		streamErr <- system.Events(conn, src, cancel, opts)
 	}()
 
 	go func() {

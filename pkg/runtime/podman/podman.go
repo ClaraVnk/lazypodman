@@ -3,24 +3,45 @@ package podman
 import (
 	"context"
 	"fmt"
+	"sync"
+
+	"github.com/containers/podman/v5/pkg/bindings"
 
 	"github.com/jesseduffield/lazydocker/pkg/domain"
 	"github.com/jesseduffield/lazydocker/pkg/runtime"
 )
 
-// Runtime is the native Podman implementation of
-// runtime.ContainerRuntime, built on Podman's Go bindings. The container
-// method group is implemented (Phase 3b); the remaining groups land in
-// Phases 3c–3e and report runtime.ErrUnsupported until then.
+// Runtime is the native Podman implementation of runtime.ContainerRuntime,
+// built on Podman's Go bindings.
+//
+// The connection to the Podman socket is established lazily on first use,
+// not at construction: like the Docker client, building a Runtime never
+// fails just because the engine is down. The first call that needs the
+// socket surfaces runtime.ErrUnavailable, which the GUI renders as a
+// connection error instead of crashing at startup.
 type Runtime struct {
-	// conn is the bindings connection context returned by
-	// bindings.NewConnection; it carries the HTTP client to the Podman
-	// socket and is passed to every bindings call.
-	conn context.Context
+	uri     string
+	once    sync.Once
+	conn    context.Context
+	connErr error
 }
 
 // Compile-time check that Runtime satisfies the interface.
 var _ runtime.ContainerRuntime = (*Runtime)(nil)
+
+// client returns the bindings connection context, establishing it once on
+// first use. A connection failure is reported as runtime.ErrUnavailable.
+func (r *Runtime) client() (context.Context, error) {
+	r.once.Do(func() {
+		conn, err := bindings.NewConnection(context.Background(), r.uri)
+		if err != nil {
+			r.connErr = fmt.Errorf("podman: connect: %w: %s", runtime.ErrUnavailable, err.Error())
+			return
+		}
+		r.conn = conn
+	})
+	return r.conn, r.connErr
+}
 
 // unsupported wraps runtime.ErrUnsupported with the operation name so
 // callers get a clear message while errors.Is keeps working.

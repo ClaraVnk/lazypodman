@@ -10,7 +10,11 @@ import (
 
 // ListNetworks returns every network known to Podman.
 func (r *Runtime) ListNetworks(ctx context.Context) ([]domain.NetworkInfo, error) {
-	list, err := network.List(r.conn, nil)
+	conn, err := r.client()
+	if err != nil {
+		return nil, err
+	}
+	list, err := network.List(conn, nil)
 	if err != nil {
 		return nil, mapErr("list networks", err)
 	}
@@ -23,13 +27,21 @@ func (r *Runtime) ListNetworks(ctx context.Context) ([]domain.NetworkInfo, error
 
 // RemoveNetwork deletes a network.
 func (r *Runtime) RemoveNetwork(ctx context.Context, id string) error {
-	_, err := network.Remove(r.conn, id, nil)
+	conn, err := r.client()
+	if err != nil {
+		return err
+	}
+	_, err = network.Remove(conn, id, nil)
 	return mapErr("remove network", err)
 }
 
 // PruneNetworks removes all unused networks.
 func (r *Runtime) PruneNetworks(ctx context.Context) (domain.PruneReport, error) {
-	reps, err := network.Prune(r.conn, nil)
+	conn, err := r.client()
+	if err != nil {
+		return domain.PruneReport{}, err
+	}
+	reps, err := network.Prune(conn, nil)
 	if err != nil {
 		return domain.PruneReport{}, mapErr("prune networks", err)
 	}

@@ -10,7 +10,11 @@ import (
 
 // ListVolumes returns every volume known to Podman.
 func (r *Runtime) ListVolumes(ctx context.Context) ([]domain.VolumeInfo, error) {
-	list, err := volumes.List(r.conn, nil)
+	conn, err := r.client()
+	if err != nil {
+		return nil, err
+	}
+	list, err := volumes.List(conn, nil)
 	if err != nil {
 		return nil, mapErr("list volumes", err)
 	}
@@ -26,13 +30,21 @@ func (r *Runtime) ListVolumes(ctx context.Context) ([]domain.VolumeInfo, error) 
 
 // RemoveVolume deletes a volume.
 func (r *Runtime) RemoveVolume(ctx context.Context, name string, force bool) error {
+	conn, err := r.client()
+	if err != nil {
+		return err
+	}
 	o := new(volumes.RemoveOptions).WithForce(force)
-	return mapErr("remove volume", volumes.Remove(r.conn, name, o))
+	return mapErr("remove volume", volumes.Remove(conn, name, o))
 }
 
 // PruneVolumes removes all unused volumes.
 func (r *Runtime) PruneVolumes(ctx context.Context) (domain.PruneReport, error) {
-	reps, err := volumes.Prune(r.conn, nil)
+	conn, err := r.client()
+	if err != nil {
+		return domain.PruneReport{}, err
+	}
+	reps, err := volumes.Prune(conn, nil)
 	if err != nil {
 		return domain.PruneReport{}, mapErr("prune volumes", err)
 	}
