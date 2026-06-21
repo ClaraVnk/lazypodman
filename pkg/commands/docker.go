@@ -13,10 +13,6 @@ import (
 	"sync"
 	"time"
 
-	cliconfig "github.com/docker/cli/cli/config"
-	ddocker "github.com/docker/cli/cli/context/docker"
-	ctxstore "github.com/docker/cli/cli/context/store"
-	"github.com/docker/docker/client"
 	"github.com/imdario/mergo"
 	"github.com/jesseduffield/lazydocker/pkg/commands/ssh"
 	"github.com/jesseduffield/lazydocker/pkg/config"
@@ -38,11 +34,8 @@ type DockerCommand struct {
 	OSCommand *OSCommand
 	Tr        *i18n.TranslationSet
 	Config    *config.AppConfig
-	Client    *client.Client
-	// Runtime is the abstraction lazypodman uses to talk to the container
-	// engine. During the Phase 1d transition it coexists with Client; in
-	// Phase 1d.5 the bare Client field disappears and only Runtime
-	// remains. See docs/adr/0004-phase-1d-staged-rewire-strategy.md.
+	// Runtime is the sole abstraction lazypodman uses to talk to the
+	// container engine. See docs/adr/0004-phase-1d-staged-rewire-strategy.md.
 	Runtime                runtime.ContainerRuntime
 	InDockerComposeProject bool
 	// LocalProjectName is the compose project name for the directory where lazydocker was launched.
@@ -88,24 +81,9 @@ func (c *DockerCommand) NewCommandObject(obj CommandObject) CommandObject {
 	return defaultObj
 }
 
-// newDockerClient creates a Docker client with the given host.
-// We avoid using client.FromEnv because it includes WithVersionFromEnv() which
-// sets manualOverride=true when DOCKER_API_VERSION is set, preventing API version
-// negotiation even when WithAPIVersionNegotiation() is specified.
-// Instead, we explicitly configure only what we need, and rely on proper
-// API version negotiation to support older Docker daemons.
-// See https://github.com/jesseduffield/lazydocker/issues/715
-func newDockerClient(dockerHost string) (*client.Client, error) {
-	return client.NewClientWithOpts(
-		client.WithTLSClientConfigFromEnv(),
-		client.WithAPIVersionNegotiation(),
-		client.WithHost(dockerHost),
-	)
-}
-
 // NewDockerCommand it runs docker commands
 func NewDockerCommand(log *logrus.Entry, osCommand *OSCommand, tr *i18n.TranslationSet, config *config.AppConfig, errorChan chan error) (*DockerCommand, error) {
-	dockerHost, err := determineDockerHost()
+	dockerHost, err := dockerruntime.ResolveDockerHost()
 	if err != nil {
 		ogLog.Printf("> could not determine host %v", err)
 	}
@@ -129,7 +107,7 @@ func NewDockerCommand(log *logrus.Entry, osCommand *OSCommand, tr *i18n.Translat
 		dockerHost = dockerHostFromEnv
 	}
 
-	cli, err := newDockerClient(dockerHost)
+	rt, err := dockerruntime.NewWithHost(dockerHost)
 	if err != nil {
 		ogLog.Fatal(err)
 	}
@@ -139,11 +117,10 @@ func NewDockerCommand(log *logrus.Entry, osCommand *OSCommand, tr *i18n.Translat
 		OSCommand:              osCommand,
 		Tr:                     tr,
 		Config:                 config,
-		Client:                 cli,
-		Runtime:                dockerruntime.New(cli),
+		Runtime:                rt,
 		ErrorChan:              errorChan,
 		InDockerComposeProject: true,
-		Closers:                []io.Closer{tunnelCloser},
+		Closers:                []io.Closer{tunnelCloser, rt},
 	}
 
 	dockerCommand.setDockerComposeCommand(config)
@@ -518,65 +495,4 @@ func (c *DockerCommand) DockerComposeConfigForProject(project *Project) string {
 		output = err.Error()
 	}
 	return output
-}
-
-// determineDockerHost tries to the determine the docker host that we should connect to
-// in the following order of decreasing precedence:
-//   - value of "DOCKER_HOST" environment variable
-//   - host retrieved from the current context (specified via DOCKER_CONTEXT)
-//   - "default docker host" for the host operating system, otherwise
-func determineDockerHost() (string, error) {
-	// If the docker host is explicitly set via the "DOCKER_HOST" environment variable,
-	// then its a no-brainer :shrug:
-	if os.Getenv("DOCKER_HOST") != "" {
-		return os.Getenv("DOCKER_HOST"), nil
-	}
-
-	currentContext := os.Getenv("DOCKER_CONTEXT")
-	if currentContext == "" {
-		cf, err := cliconfig.Load(cliconfig.Dir())
-		if err != nil {
-			return "", err
-		}
-		currentContext = cf.CurrentContext
-	}
-
-	// On some systems (windows) `default` is stored in the docker config as the currentContext.
-	if currentContext == "" || currentContext == "default" {
-		// If a docker context is neither specified via the "DOCKER_CONTEXT" environment variable nor via the
-		// $HOME/.docker/config file, then we fall back to connecting to the "default docker host" meant for
-		// the host operating system.
-		return defaultDockerHost, nil
-	}
-
-	storeConfig := ctxstore.NewConfig(
-		func() interface{} { return &ddocker.EndpointMeta{} },
-		ctxstore.EndpointTypeGetter(ddocker.DockerEndpoint, func() interface{} { return &ddocker.EndpointMeta{} }),
-	)
-
-	st := ctxstore.New(cliconfig.ContextStoreDir(), storeConfig)
-	md, err := st.GetMetadata(currentContext)
-	if err != nil {
-		return "", err
-	}
-	dockerEP, ok := md.Endpoints[ddocker.DockerEndpoint]
-	if !ok {
-		return "", err
-	}
-	dockerEPMeta, ok := dockerEP.(ddocker.EndpointMeta)
-	if !ok {
-		return "", fmt.Errorf("expected docker.EndpointMeta, got %T", dockerEP)
-	}
-
-	if dockerEPMeta.Host != "" {
-		return dockerEPMeta.Host, nil
-	}
-
-	// We might end up here, if the context was created with the `host` set to an empty value (i.e. '').
-	// For example:
-	// ```sh
-	// docker context create foo --docker "host="
-	// ```
-	// In such scenario, we mimic the `docker` cli and try to connect to the "default docker host".
-	return defaultDockerHost, nil
 }

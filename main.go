@@ -2,17 +2,18 @@ package main
 
 import (
 	"bytes"
+	stderrors "errors"
 	"fmt"
 	"log"
 	"os"
 	"runtime"
 	"runtime/debug"
 
-	"github.com/docker/docker/client"
 	"github.com/go-errors/errors"
 	"github.com/integrii/flaggy"
 	"github.com/jesseduffield/lazydocker/pkg/app"
 	"github.com/jesseduffield/lazydocker/pkg/config"
+	lazyruntime "github.com/jesseduffield/lazydocker/pkg/runtime"
 	"github.com/jesseduffield/lazydocker/pkg/utils"
 	"github.com/jesseduffield/yaml"
 	"github.com/samber/lo"
@@ -90,7 +91,7 @@ func main() {
 			os.Exit(0)
 		}
 
-		if client.IsErrConnectionFailed(err) {
+		if stderrors.Is(err, lazyruntime.ErrUnavailable) {
 			log.Println(app.Tr.ConnectionFailed)
 			os.Exit(0)
 		}
