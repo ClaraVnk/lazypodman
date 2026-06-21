@@ -3,8 +3,6 @@ package podman
 import (
 	"context"
 	"fmt"
-	"io"
-	"time"
 
 	"github.com/jesseduffield/lazydocker/pkg/domain"
 	"github.com/jesseduffield/lazydocker/pkg/runtime"
@@ -51,27 +49,11 @@ func (r *Runtime) InspectContainer(ctx context.Context, id string) (domain.Conta
 
 // ----- Volumes ----- (implemented in volume.go)
 
-// ----- Logs / Stats / Attach ----- (Phase 3e)
+// ----- Logs (logs.go) / Stats (stats.go) / Events (event.go) -----
 
-func (r *Runtime) ContainerLogs(ctx context.Context, id string, opts runtime.LogOptions) (io.ReadCloser, error) {
-	return nil, unsupported("container logs")
-}
-
-func (r *Runtime) ContainerStats(ctx context.Context, id string) (<-chan domain.Stats, error) {
-	return nil, unsupported("container stats")
-}
-
+// AttachContainer stays a follow-up: upstream lazydocker attaches via the
+// CLI (exec) path in pkg/commands, not the SDK/bindings; the runtime
+// affordance is revisited once that flow is ported.
 func (r *Runtime) AttachContainer(ctx context.Context, id string, opts runtime.AttachOptions) (domain.AttachStream, error) {
 	return nil, unsupported("attach container")
-}
-
-// ----- Events ----- (Phase 3e)
-
-func (r *Runtime) Events(ctx context.Context, since time.Time) (<-chan domain.Event, <-chan error) {
-	events := make(chan domain.Event)
-	errs := make(chan error, 1)
-	errs <- unsupported("events")
-	close(events)
-	close(errs)
-	return events, errs
 }
