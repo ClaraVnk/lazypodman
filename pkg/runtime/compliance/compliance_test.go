@@ -57,6 +57,7 @@ func TestCompliance(t *testing.T) {
 // healthy engine and return a non-nil slice; inspect of a listed container
 // succeeds and round-trips its ID.
 func runReadContracts(t *testing.T, rt runtime.ContainerRuntime) {
+	t.Helper()
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 	defer cancel()
 
