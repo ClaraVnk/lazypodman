@@ -3,7 +3,60 @@ package commands
 import (
 	"math"
 	"time"
+
+	"github.com/jesseduffield/lazydocker/pkg/domain"
 )
+
+// statsFromDomain projects a domain.Stats snapshot back onto the legacy
+// ContainerStats struct that user graph configs reference by JSON path
+// (e.g. "ClientStats.CPUStats.CPUUsage.TotalUsage"). Only the fields the
+// runtime abstraction surfaces are populated; the rest stay at the zero
+// value. The percentage calculators below depend only on populated
+// fields and therefore keep working.
+func statsFromDomain(s domain.Stats) ContainerStats {
+	out := ContainerStats{
+		Read:    s.Time,
+		Preread: s.Time, // domain.Stats does not carry a pre-read timestamp
+	}
+	out.CPUStats.CPUUsage.TotalUsage = int64(s.CPU.TotalUsage)
+	out.CPUStats.SystemCPUUsage = int64(s.CPU.SystemUsage)
+	out.CPUStats.OnlineCpus = int(s.CPU.OnlineCPUs)
+	if len(s.CPU.PerCPUUsage) > 0 {
+		out.CPUStats.CPUUsage.PercpuUsage = make([]int64, 0, len(s.CPU.PerCPUUsage))
+		for _, v := range s.CPU.PerCPUUsage {
+			out.CPUStats.CPUUsage.PercpuUsage = append(out.CPUStats.CPUUsage.PercpuUsage, int64(v))
+		}
+	}
+	out.PrecpuStats.CPUUsage.TotalUsage = int64(s.PreCPU.TotalUsage)
+	out.PrecpuStats.SystemCPUUsage = int64(s.PreCPU.SystemUsage)
+	out.PrecpuStats.OnlineCpus = int(s.PreCPU.OnlineCPUs)
+	if len(s.PreCPU.PerCPUUsage) > 0 {
+		out.PrecpuStats.CPUUsage.PercpuUsage = make([]int64, 0, len(s.PreCPU.PerCPUUsage))
+		for _, v := range s.PreCPU.PerCPUUsage {
+			out.PrecpuStats.CPUUsage.PercpuUsage = append(out.PrecpuStats.CPUUsage.PercpuUsage, int64(v))
+		}
+	}
+
+	out.MemoryStats.Usage = int(s.Memory.Usage)
+	out.MemoryStats.MaxUsage = int(s.Memory.MaxUsage)
+	out.MemoryStats.Limit = int64(s.Memory.Limit)
+
+	// Network breakdown — the upstream struct hard-codes eth0; mirror
+	// whichever interface comes first in the snapshot so the legacy graph
+	// path "Networks.Eth0.RxBytes" keeps working for the common case.
+	for _, n := range s.Networks {
+		out.Networks.Eth0.RxBytes = int(n.RxBytes)
+		out.Networks.Eth0.RxPackets = int(n.RxPackets)
+		out.Networks.Eth0.RxErrors = int(n.RxErrors)
+		out.Networks.Eth0.RxDropped = int(n.RxDropped)
+		out.Networks.Eth0.TxBytes = int(n.TxBytes)
+		out.Networks.Eth0.TxPackets = int(n.TxPackets)
+		out.Networks.Eth0.TxErrors = int(n.TxErrors)
+		out.Networks.Eth0.TxDropped = int(n.TxDropped)
+		break
+	}
+	return out
+}
 
 // RecordedStats contains both the container stats we've received from docker, and our own derived stats  from those container stats. When configuring a graph, you're basically specifying the path of a value in this struct
 type RecordedStats struct {

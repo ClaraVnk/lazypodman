@@ -108,6 +108,12 @@ type LogOptions struct {
 	Until string
 	// Timestamps prefixes each line with its RFC3339 timestamp.
 	Timestamps bool
+	// TTY tells the runtime whether the container was created with a
+	// pseudo-TTY. When true the stream is plain UTF-8; when false the
+	// stream is multiplexed at the wire level (stdout + stderr framed)
+	// and the runtime adapter is responsible for demuxing into a plain
+	// stream — callers never see the multiplexed bytes.
+	TTY bool
 }
 
 // AttachOptions controls how AttachContainer wires the streams.

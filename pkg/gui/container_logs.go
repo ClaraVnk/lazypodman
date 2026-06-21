@@ -8,7 +8,6 @@ import (
 	"os/signal"
 	"time"
 
-	"github.com/docker/docker/pkg/stdcopy"
 	"github.com/fatih/color"
 	"github.com/jesseduffield/lazydocker/pkg/commands"
 	"github.com/jesseduffield/lazydocker/pkg/domain"
@@ -106,20 +105,10 @@ func (gui *Gui) promptToReturn() {
 }
 
 func (gui *Gui) writeContainerLogs(ctr *commands.Container, ctx context.Context, writer io.Writer) error {
-	readCloser, err := gui.DockerCommand.Runtime.ContainerLogs(ctx, ctr.ID, runtime.LogOptions{
-		Follow:     true,
-		Tail:       gui.Config.UserConfig.Logs.Tail,
-		Since:      gui.Config.UserConfig.Logs.Since,
-		Timestamps: gui.Config.UserConfig.Logs.Timestamps,
-	})
-	if err != nil {
-		gui.Log.Error(err)
-		return err
-	}
-	defer readCloser.Close()
-
+	// Block until container details are available — we need to know
+	// whether the container has a TTY before the runtime can decide
+	// whether to demux the multiplexed log stream.
 	if !ctr.DetailsLoaded() {
-		// loop until the details load or context is cancelled, using timer
 		ticker := time.NewTicker(time.Millisecond * 100)
 		defer ticker.Stop()
 	outer:
@@ -135,17 +124,21 @@ func (gui *Gui) writeContainerLogs(ctr *commands.Container, ctx context.Context,
 		}
 	}
 
-	if ctr.Details.Config.Tty {
-		_, err = io.Copy(writer, readCloser)
-		if err != nil {
-			return err
-		}
-	} else {
-		_, err = stdcopy.StdCopy(writer, writer, readCloser)
-		if err != nil {
-			return err
-		}
+	readCloser, err := gui.DockerCommand.Runtime.ContainerLogs(ctx, ctr.ID, runtime.LogOptions{
+		Follow:     true,
+		Tail:       gui.Config.UserConfig.Logs.Tail,
+		Since:      gui.Config.UserConfig.Logs.Since,
+		Timestamps: gui.Config.UserConfig.Logs.Timestamps,
+		TTY:        ctr.Details.Config.Tty,
+	})
+	if err != nil {
+		gui.Log.Error(err)
+		return err
 	}
+	defer readCloser.Close()
 
+	if _, err := io.Copy(writer, readCloser); err != nil {
+		return err
+	}
 	return nil
 }

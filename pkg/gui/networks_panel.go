@@ -57,7 +57,7 @@ func (gui *Gui) networkConfigStr(network *commands.Network) string {
 	output += utils.WithPadding("ID: ", padding) + network.Network.ID + "\n"
 	output += utils.WithPadding("Name: ", padding) + network.Name + "\n"
 	output += utils.WithPadding("Driver: ", padding) + network.Network.Driver + "\n"
-	output += utils.WithPadding("Scope: ", padding) + network.Network.Scope + "\n"
+	output += utils.WithPadding("Scope: ", padding) + string(network.Network.Scope) + "\n"
 	output += utils.WithPadding("EnabledIPV6: ", padding) + strconv.FormatBool(network.Network.EnableIPv6) + "\n"
 	output += utils.WithPadding("Internal: ", padding) + strconv.FormatBool(network.Network.Internal) + "\n"
 	output += utils.WithPadding("Attachable: ", padding) + strconv.FormatBool(network.Network.Attachable) + "\n"

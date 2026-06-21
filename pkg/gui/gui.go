@@ -6,8 +6,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/docker/docker/api/types/events"
-
 	"github.com/go-errors/errors"
 
 	throttle "github.com/boz/go-throttle"
@@ -336,7 +334,7 @@ func (gui *Gui) listenForEvents(ctx context.Context, refresh func()) {
 
 outer:
 	for {
-		messageChan, errChan := gui.DockerCommand.Client.Events(context.Background(), events.ListOptions{})
+		messageChan, errChan := gui.DockerCommand.Runtime.Events(context.Background(), time.Time{})
 
 		if errorCount > 0 {
 			select {

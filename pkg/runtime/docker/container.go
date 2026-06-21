@@ -79,12 +79,11 @@ func (r *Runtime) RemoveContainer(ctx context.Context, id string, opts runtime.R
 	return mapErr("remove container", r.cli.ContainerRemove(ctx, id, dockerOpts))
 }
 
-// ContainerLogs streams a container's logs. Caller must Close the reader.
-//
-// The Docker engine returns logs multiplexed (stdout/stderr framed with
-// stdcopy) when the container does not have a TTY. Demuxing is the
-// caller's responsibility for now — a future PR will abstract this
-// behind a domain.LogStream type and move the demux into the adapter.
+// ContainerLogs streams a container's logs. The returned reader emits a
+// plain UTF-8 stream: when the container has no TTY the Docker engine
+// multiplexes stdout/stderr (stdcopy framing); this adapter demuxes
+// internally so the caller never sees the framed bytes. Caller must
+// Close the reader.
 func (r *Runtime) ContainerLogs(ctx context.Context, id string, opts runtime.LogOptions) (io.ReadCloser, error) {
 	dockerOpts := dockercontainer.LogsOptions{
 		ShowStdout: true,
@@ -99,7 +98,10 @@ func (r *Runtime) ContainerLogs(ctx context.Context, id string, opts runtime.Log
 	if err != nil {
 		return nil, mapErr("container logs", err)
 	}
-	return rc, nil
+	if opts.TTY {
+		return rc, nil
+	}
+	return demuxedLogStream(rc), nil
 }
 
 // ContainerTop returns the process table of a running container.

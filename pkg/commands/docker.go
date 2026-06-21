@@ -1,9 +1,7 @@
 package commands
 
 import (
-	"bufio"
 	"context"
-	"encoding/json"
 	"fmt"
 	"io"
 	ogLog "log"
@@ -198,23 +196,19 @@ func (c *DockerCommand) Close() error {
 
 func (c *DockerCommand) CreateClientStatMonitor(container *Container) {
 	container.MonitoringStats = true
-	stream, err := c.Client.ContainerStats(context.Background(), container.ID, true)
+	defer func() { container.MonitoringStats = false }()
+
+	ctx := context.Background()
+	stream, err := c.Runtime.ContainerStats(ctx, container.ID)
 	if err != nil {
-		// not creating error panel because if we've disconnected from docker we'll
-		// have already created an error panel
+		// Not creating an error panel — if we've disconnected from the engine
+		// we'll already have one shown by the event loop.
 		c.Log.Error(err)
-		container.MonitoringStats = false
 		return
 	}
 
-	defer stream.Body.Close()
-
-	scanner := bufio.NewScanner(stream.Body)
-	for scanner.Scan() {
-		data := scanner.Bytes()
-		var stats ContainerStats
-		_ = json.Unmarshal(data, &stats)
-
+	for snapshot := range stream {
+		stats := statsFromDomain(snapshot)
 		recordedStats := &RecordedStats{
 			ClientStats: stats,
 			DerivedStats: DerivedStats{
@@ -223,11 +217,8 @@ func (c *DockerCommand) CreateClientStatMonitor(container *Container) {
 			},
 			RecordedAt: time.Now(),
 		}
-
 		container.appendStats(recordedStats, c.Config.UserConfig.Stats.MaxDuration)
 	}
-
-	container.MonitoringStats = false
 }
 
 func (c *DockerCommand) RefreshContainersAndServices(currentContainers []*Container) ([]*Container, []*Service, error) {
