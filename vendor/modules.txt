@@ -86,6 +86,7 @@ github.com/containers/podman/v5/pkg/api/handlers/types
 github.com/containers/podman/v5/pkg/auth
 github.com/containers/podman/v5/pkg/bindings
 github.com/containers/podman/v5/pkg/bindings/containers
+github.com/containers/podman/v5/pkg/bindings/generate
 github.com/containers/podman/v5/pkg/bindings/images
 github.com/containers/podman/v5/pkg/bindings/internal/util
 github.com/containers/podman/v5/pkg/bindings/network
