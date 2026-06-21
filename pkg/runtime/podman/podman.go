@@ -24,6 +24,11 @@ type Runtime struct {
 	once    sync.Once
 	conn    context.Context
 	connErr error
+
+	// runCommand runs an external command (used for quadlets, which are
+	// managed via systemctl, not the API). Nil means use os/exec; tests
+	// inject a fake. See quadlet.go.
+	runCommand func(ctx context.Context, name string, args ...string) ([]byte, error)
 }
 
 // Compile-time check that Runtime satisfies the interface.
