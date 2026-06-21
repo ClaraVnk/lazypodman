@@ -74,15 +74,18 @@ type TranslationSet struct {
 	ImagesTitle                 string
 	VolumesTitle                string
 	NetworksTitle               string
+	PodsTitle                   string
 	NoContainers                string
 	NoContainer                 string
 	NoImages                    string
 	NoVolumes                   string
 	NoNetworks                  string
+	NoPods                      string
 	NoServices                  string
 	RemoveImage                 string
 	RemoveVolume                string
 	RemoveNetwork               string
+	RemovePod                   string
 	RemoveWithoutPrune          string
 	RemoveWithoutPruneWithForce string
 	RemoveWithForce             string
@@ -90,12 +93,14 @@ type TranslationSet struct {
 	PruneContainers             string
 	PruneVolumes                string
 	PruneNetworks               string
+	PrunePods                   string
 	ConfirmPruneContainers      string
 	ConfirmStopContainers       string
 	ConfirmRemoveContainers     string
 	ConfirmPruneImages          string
 	ConfirmPruneVolumes         string
 	ConfirmPruneNetworks        string
+	ConfirmPrunePods            string
 	PruningStatus               string
 	StopService                 string
 	PressEnterToReturn          string
@@ -136,6 +141,7 @@ type TranslationSet struct {
 	FocusImages     string
 	FocusVolumes    string
 	FocusNetworks   string
+	FocusPods       string
 }
 
 func englishSet() TranslationSet {
@@ -201,12 +207,14 @@ func englishSet() TranslationSet {
 		RemoveImage:                 "remove image",
 		RemoveVolume:                "remove volume",
 		RemoveNetwork:               "remove network",
+		RemovePod:                   "remove pod",
 		RemoveWithoutPrune:          "remove without deleting untagged parents",
 		RemoveWithoutPruneWithForce: "remove (forced) without deleting untagged parents",
 		RemoveWithForce:             "remove (forced)",
 		PruneContainers:             "prune exited containers",
 		PruneVolumes:                "prune unused volumes",
 		PruneNetworks:               "prune unused networks",
+		PrunePods:                   "prune stopped pods",
 		PruneImages:                 "prune unused images",
 		StopAllContainers:           "stop all containers",
 		RemoveAllContainers:         "remove all containers (forced)",
@@ -227,6 +235,7 @@ func englishSet() TranslationSet {
 		ImagesTitle:                 "Images",
 		VolumesTitle:                "Volumes",
 		NetworksTitle:               "Networks",
+		PodsTitle:                   "Pods",
 		CustomCommandTitle:          "Custom Command:",
 		BulkCommandTitle:            "Bulk Command:",
 		ErrorTitle:                  "Error",
@@ -249,6 +258,7 @@ func englishSet() TranslationSet {
 		NoImages:     "No images",
 		NoVolumes:    "No volumes",
 		NoNetworks:   "No networks",
+		NoPods:       "No pods",
 		NoServices:   "No services",
 
 		ConfirmQuit:                 "Are you sure you want to quit?",
@@ -261,6 +271,7 @@ func englishSet() TranslationSet {
 		ConfirmRemoveContainers:     "Are you sure you want to remove all containers?",
 		ConfirmPruneVolumes:         "Are you sure you want to prune all unused volumes?",
 		ConfirmPruneNetworks:        "Are you sure you want to prune all unused networks?",
+		ConfirmPrunePods:            "Are you sure you want to prune all stopped pods?",
 		StopService:                 "Are you sure you want to stop this service's containers?",
 		StopContainer:               "Are you sure you want to stop this container?",
 		PressEnterToReturn:          "Press enter to return to lazydocker (this prompt can be disabled in your config by setting `gui.returnImmediately: true`)",
@@ -279,5 +290,6 @@ func englishSet() TranslationSet {
 		FocusImages:     "focus images panel",
 		FocusVolumes:    "focus volumes panel",
 		FocusNetworks:   "focus networks panel",
+		FocusPods:       "focus pods panel",
 	}
 }

@@ -94,6 +94,17 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
   <kbd>/</kbd>: filtrar lista
 </pre>
 
+## 
+
+<pre>
+  <kbd>d</kbd>: remove pod
+  <kbd>b</kbd>: ver comandos em massa
+  <kbd>enter</kbd>: focar no painel principal
+  <kbd>[</kbd>: aba anterior
+  <kbd>]</kbd>: próxima aba
+  <kbd>/</kbd>: filtrar lista
+</pre>
+
 ## Principal
 
 <pre>
@@ -111,4 +122,5 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
   <kbd>4</kbd>: focus images panel
   <kbd>5</kbd>: focus volumes panel
   <kbd>6</kbd>: focus networks panel
+  <kbd>7</kbd>: focus pods panel
 </pre>

@@ -94,6 +94,17 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
   <kbd>/</kbd>: 过滤列表
 </pre>
 
+## 
+
+<pre>
+  <kbd>d</kbd>: remove pod
+  <kbd>b</kbd>: 查看批量命令
+  <kbd>enter</kbd>: 聚焦主面板
+  <kbd>[</kbd>: 上一个选项卡
+  <kbd>]</kbd>: 下一个选项卡
+  <kbd>/</kbd>: 过滤列表
+</pre>
+
 ## 主要
 
 <pre>
@@ -111,4 +122,5 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
   <kbd>4</kbd>: focus images panel
   <kbd>5</kbd>: focus volumes panel
   <kbd>6</kbd>: focus networks panel
+  <kbd>7</kbd>: focus pods panel
 </pre>
