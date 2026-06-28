@@ -47,12 +47,29 @@ func selectBackend(config *config.AppConfig) string {
 	return "podman"
 }
 
+// EngineName returns the human-facing name of the active backend
+// ("Podman", "Docker") for user-facing messages, falling back to a neutral
+// label when the backend is unknown.
+func (c *DockerCommand) EngineName() string {
+	switch c.Backend {
+	case "podman":
+		return "Podman"
+	case "docker":
+		return "Docker"
+	default:
+		return "container engine"
+	}
+}
+
 // DockerCommand is our main docker interface
 type DockerCommand struct {
 	Log       *logrus.Entry
 	OSCommand *OSCommand
 	Tr        *i18n.TranslationSet
 	Config    *config.AppConfig
+	// Backend is the resolved container backend ("podman" | "docker"), used
+	// for backend-aware user-facing messages. See EngineName.
+	Backend string
 	// Runtime is the sole abstraction lazypodman uses to talk to the
 	// container engine. See docs/adr/0004-phase-1d-staged-rewire-strategy.md.
 	Runtime                runtime.ContainerRuntime
@@ -102,7 +119,8 @@ func (c *DockerCommand) NewCommandObject(obj CommandObject) CommandObject {
 
 // NewDockerCommand it runs docker commands
 func NewDockerCommand(log *logrus.Entry, osCommand *OSCommand, tr *i18n.TranslationSet, config *config.AppConfig, errorChan chan error) (*DockerCommand, error) {
-	rt, closers, err := buildRuntime(selectBackend(config), osCommand)
+	backend := selectBackend(config)
+	rt, closers, err := buildRuntime(backend, osCommand)
 	if err != nil {
 		return nil, err
 	}
@@ -112,6 +130,7 @@ func NewDockerCommand(log *logrus.Entry, osCommand *OSCommand, tr *i18n.Translat
 		OSCommand:              osCommand,
 		Tr:                     tr,
 		Config:                 config,
+		Backend:                backend,
 		Runtime:                rt,
 		ErrorChan:              errorChan,
 		InDockerComposeProject: true,

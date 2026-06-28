@@ -17,7 +17,7 @@ func portugueseSet() TranslationSet {
 		NoViewMachingNewLineFocusedSwitchStatement: "No view matching newLineFocused switch statement",
 
 		ErrorOccurred:                     "Um erro ocorreu! Por favor, crie uma issue em https://github.com/jesseduffield/lazydocker/issues",
-		ConnectionFailed:                  "Falha na conexão com o cliente Docker. Você pode precisar reiniciar o seu cliente Docker",
+		ConnectionFailed:                  "Falha na conexão com o cliente {{engine}}. Você pode precisar reiniciar o seu cliente {{engine}}",
 		UnattachableContainerError:        "O contêiner não suporta anexação. Você deve executar o serviço com a flag '-it' ou usar `stdin_open: true, tty: true` no arquivo docker-compose.yml",
 		WaitingForContainerInfo:           "Não é possível prosseguir até que o Docker forneça mais informações sobre o contêiner. Por favor, tente novamente em alguns momentos.",
 		CannotAttachStoppedContainerError: "Você não pode anexar a um contêiner parado, você precisa iniciá-lo primeiro (o que você pode fazer com a tecla 'r') (sim, sou preguiçoso demais para fazer isso automaticamente para você) (aliás, bem legal que eu posso me comunicar diretamente com você na forma de uma mensagem de erro)",

@@ -1,11 +1,39 @@
 package commands
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/jesseduffield/lazydocker/pkg/config"
+	"github.com/jesseduffield/lazydocker/pkg/i18n"
+	"github.com/jesseduffield/lazydocker/pkg/utils"
 	"github.com/stretchr/testify/assert"
 )
+
+// TestEngineName covers the human-facing backend label used in messages.
+func TestEngineName(t *testing.T) {
+	cases := map[string]string{
+		"podman": "Podman",
+		"docker": "Docker",
+		"":       "container engine",
+		"weird":  "container engine",
+	}
+	for backend, want := range cases {
+		assert.Equal(t, want, (&DockerCommand{Backend: backend}).EngineName())
+	}
+}
+
+// TestConnectionFailedIsBackendAware guards #13: the connection-failure
+// message must carry the {{engine}} placeholder and, once rendered with the
+// active backend, name it without leaking "docker" when running Podman.
+func TestConnectionFailedIsBackendAware(t *testing.T) {
+	tr := i18n.GetTranslationSets()["en"]
+	assert.Contains(t, tr.ConnectionFailed, "{{engine}}")
+
+	rendered := utils.ResolvePlaceholderString(tr.ConnectionFailed, map[string]string{"engine": "Podman"})
+	assert.Contains(t, rendered, "Podman")
+	assert.NotContains(t, strings.ToLower(rendered), "docker")
+}
 
 // TestSelectBackend covers the runtime selection precedence:
 // LAZYPODMAN_RUNTIME env > config `runtime:` > "podman" default.

@@ -15,7 +15,7 @@ func spanishSet() TranslationSet {
 		RunningBulkCommandStatus:   "ejecutando comando masivo",
 
 		ErrorOccurred:                 "¡Hubo un error! Por favor crea un issue en https://github.com/jesseduffield/lazydocker/issues",
-		ConnectionFailed:              "Falló la conexión con el docker client. Quizá necesitas reiniciar tu docker client",
+		ConnectionFailed:              "Falló la conexión con el {{engine}} client. Quizá necesitas reiniciar tu {{engine}} client",
 		UnattachableContainerError:    "Container does not support attaching. You must either run the service with the '-it' flag or use `stdin_open: true, tty: true` in the docker-compose.yml file",
 		WaitingForContainerInfo:       "No podemos proceder hasta que docker nos de más información sobre el contenedor. Inténtalo otra vez en unos segundos.",
 		CannotAccessDockerSocketError: "No es posible acceder al docker socket en: unix:///var/run/docker.sock\nEjecuta lazydocker como root o lee https://docs.docker.com/install/linux/linux-postinstall/",
