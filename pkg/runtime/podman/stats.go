@@ -18,26 +18,41 @@ func (r *Runtime) ContainerStats(ctx context.Context, id string) (<-chan domain.
 	if err != nil {
 		return nil, err
 	}
-	reports, err := containers.Stats(conn, []string{id}, new(containers.StatsOptions).WithStream(true))
+	// Derive the stream context from the connection (so it keeps the
+	// bindings client) but make it cancellable, so when the caller's ctx
+	// is done we tear the bindings stream down instead of leaking its
+	// goroutine and HTTP connection. Mirrors ContainerLogs.
+	streamCtx, cancel := context.WithCancel(conn)
+	reports, err := containers.Stats(streamCtx, []string{id}, new(containers.StatsOptions).WithStream(true))
 	if err != nil {
+		cancel()
 		return nil, mapErr("container stats", err)
 	}
 	out := make(chan domain.Stats)
 	go func() {
 		defer close(out)
+		defer cancel()
 		var prev *define.ContainerStats
-		for rep := range reports {
-			if rep.Error != nil || len(rep.Stats) == 0 {
-				continue
-			}
-			cur := rep.Stats[0]
+		for {
 			select {
-			case out <- podmanStatsToDomain(cur, prev):
 			case <-ctx.Done():
 				return
+			case rep, ok := <-reports:
+				if !ok {
+					return
+				}
+				if rep.Error != nil || len(rep.Stats) == 0 {
+					continue
+				}
+				cur := rep.Stats[0]
+				select {
+				case out <- podmanStatsToDomain(cur, prev):
+				case <-ctx.Done():
+					return
+				}
+				snapshot := cur
+				prev = &snapshot
 			}
-			snapshot := cur
-			prev = &snapshot
 		}
 	}()
 	return out, nil
