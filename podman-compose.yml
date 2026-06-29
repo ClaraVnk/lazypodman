@@ -2,6 +2,7 @@ services:
   lazypodman:
     build:
       context: .
+      dockerfile: Containerfile
       args:
         BASE_IMAGE_BUILDER: golang
         GOARCH: amd64

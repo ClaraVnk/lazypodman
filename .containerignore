@@ -6,7 +6,7 @@ test
 .goreleaser.yml
 *.md
 coverage.txt
-Dockerfile
+Containerfile
 LICENSE
 test.sh
 .git

@@ -15,7 +15,7 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=${GOARCH} GOARM=${GOARM} \
     -ldflags="-s -w \
     -X main.commit=${VCS_REF} \
     -X main.version=${VERSION} \
-    -X main.buildSource=Docker"
+    -X main.buildSource=Podman"
 
 FROM alpine:${ALPINE_VERSION}
 ARG BUILD_DATE

@@ -1,7 +1,7 @@
 {
   "name": "Docker in Docker",
   "build": {
-    "dockerfile": "./Dockerfile",
+    "dockerfile": "./Containerfile",
     "context": "."
   },
   "features": {
