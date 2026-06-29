@@ -148,25 +148,34 @@ jobs:
         with:
           go-version: 1.26.x
       - name: Install and start Podman
-        # Best-effort: if the Podman socket does not come up, the suite
-        # self-skips the Podman backend and still exercises Docker. The
-        # step itself never fails the job for that reason.
+        # Podman is the default backend, so its parity MUST be exercised in
+        # CI: fail the job if the socket does not come up, rather than
+        # letting the compliance suite silently self-skip the Podman backend
+        # and report a misleading green check.
         run: |
-          sudo apt-get update -q && sudo apt-get install -y -q podman || true
+          sudo apt-get update -q
+          sudo apt-get install -y -q podman
           podman system service -t 0 unix:///tmp/podman.sock >/tmp/podman-service.log 2>&1 &
           for i in $(seq 1 20); do
             [ -S /tmp/podman.sock ] && break
             sleep 1
           done
-          if [ -S /tmp/podman.sock ]; then
-            echo "Podman socket is up."
-          else
-            echo "Podman socket did not start; the suite will skip the Podman backend:"
+          if [ ! -S /tmp/podman.sock ]; then
+            echo "::error::Podman socket did not start; cannot verify Podman parity."
             cat /tmp/podman-service.log || true
+            exit 1
           fi
+          # Confirm the socket actually serves the API before relying on it.
+          if ! podman --url unix:///tmp/podman.sock version >/dev/null 2>&1; then
+            echo "::error::Podman socket is present but not serving the API."
+            cat /tmp/podman-service.log || true
+            exit 1
+          fi
+          echo "Podman socket is up and serving the API."
       - name: Run dual-backend compliance suite
         # Exercises the Podman backend (CONTAINER_HOST above) and the Docker
         # backend (the runner's preinstalled docker daemon) against the same
-        # read contracts. Each backend self-skips if its socket is absent.
+        # read contracts. The Podman socket is guaranteed up by the previous
+        # step; the Docker backend self-skips if its socket is absent.
         run: |
           go test -v ./pkg/runtime/compliance/...
