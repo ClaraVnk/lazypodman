@@ -119,4 +119,4 @@ A hard fork of [jesseduffield/lazydocker](https://github.com/jesseduffield/lazyd
 
 ## License
 
-[MIT](LICENSE) © 2026 Clara Van Acker — and the original lazydocker authors.
+[MIT](LICENSE) © 2026 Clara Vanacker — and the original lazydocker authors.
