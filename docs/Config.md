@@ -12,17 +12,15 @@ Changes to the user config will only take place after closing and re-opening laz
 - Linux: `~/.config/lazypodman/config.yml`
 - Windows: `C:\Users\<User>\AppData\Roaming\lazypodman\config.yml`
 
-JSON schema is available for `config.yml` so that IntelliSense in Visual Studio Code
-(completion and error checking) is automatically enabled when the [YAML Red Hat][yaml]
-extension is installed. However, note that automatic schema detection only works
-if your config file is in one of the standard paths mentioned above. If you
-override the path to the file, you can still make IntelliSense work by adding
+lazypodman's config schema is compatible with lazydocker's, so you can reuse
+its published JSON schema to get IntelliSense in Visual Studio Code (completion
+and error checking) when the [YAML Red Hat][yaml] extension is installed. Add
+the following to the top of your config file, or configure it via
+[Visual Studio Code settings.json config][settings]:
 
 ```yaml
 # yaml-language-server: $schema=https://json.schemastore.org/lazydocker.json
 ```
-
-to the top of your config file or via [Visual Studio Code settings.json config][settings].
 
 [yaml]: https://marketplace.visualstudio.com/items?itemName=redhat.vscode-yaml
 [settings]: https://github.com/redhat-developer/vscode-yaml#associating-a-schema-to-a-glob-pattern-via-yamlschemas
