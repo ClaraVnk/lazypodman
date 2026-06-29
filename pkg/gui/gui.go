@@ -341,7 +341,7 @@ func (gui *Gui) listenForEvents(ctx context.Context, refresh func()) {
 
 outer:
 	for {
-		messageChan, errChan := gui.DockerCommand.Runtime.Events(context.Background(), time.Time{})
+		messageChan, errChan := gui.DockerCommand.Runtime.Events(ctx, time.Time{})
 
 		if errorCount > 0 {
 			select {
