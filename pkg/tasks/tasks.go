@@ -99,6 +99,14 @@ func (t *TaskManager) NewTask(f func(ctx context.Context)) error {
 	return nil
 }
 
+// stopTimeout bounds how long Stop waits for a cancelled task to actually
+// return. A well-behaved task stops promptly once its context is cancelled;
+// the timeout is a safety net so a single misbehaving task (e.g. a stream
+// that fails to honour cancellation) can't wedge the task manager — and with
+// it every main panel — indefinitely. See the container-switch freeze that
+// was caused by the Podman log streamer ignoring the caller's context.
+const stopTimeout = 3 * time.Second
+
 func (t *Task) Stop() {
 	t.stopMutex.Lock()
 	defer t.stopMutex.Unlock()
@@ -107,9 +115,13 @@ func (t *Task) Stop() {
 	}
 
 	t.cancel()
-	t.Log.Info("closed stop channel, waiting for notifyStopped message")
-	<-t.notifyStopped
-	t.Log.Info("received notifystopped message")
+	t.Log.Info("cancelled task, waiting for notifyStopped message")
+	select {
+	case <-t.notifyStopped:
+		t.Log.Info("received notifystopped message")
+	case <-time.After(stopTimeout):
+		t.Log.Warnf("task did not stop within %s of cancellation; abandoning it to keep the UI responsive", stopTimeout)
+	}
 	t.stopped = true
 }
 
