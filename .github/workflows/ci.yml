@@ -155,7 +155,11 @@ jobs:
         run: |
           sudo apt-get update -q
           sudo apt-get install -y -q podman
-          podman system service --time=0 unix:///tmp/podman.sock >/tmp/podman-service.log 2>&1 &
+          # CONTAINER_HOST is set at the job level for the compliance suite
+          # (the client). `podman system service` also reads it and adds it as
+          # an implicit endpoint, which then clashes with the explicit URI
+          # below ("accepts at most 1 arg(s)"). Unset it just for the server.
+          env -u CONTAINER_HOST podman system service --time=0 unix:///tmp/podman.sock >/tmp/podman-service.log 2>&1 &
           for i in $(seq 1 20); do
             [ -S /tmp/podman.sock ] && break
             sleep 1
