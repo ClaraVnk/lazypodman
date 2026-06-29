@@ -11,7 +11,12 @@ A fast, keyboard-driven terminal UI for Podman — containers, pods, images, vol
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Go](https://img.shields.io/badge/Go-1.25%2B-00ADD8?logo=go&logoColor=white)](go.mod)
 [![Podman](https://img.shields.io/badge/Podman-native-892CA0?logo=podman&logoColor=white)](https://podman.io)
+[![Release](https://img.shields.io/github/v/release/ClaraVnk/lazypodman?logo=github)](https://github.com/ClaraVnk/lazypodman/releases/latest)
 [![PRs welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](#contributing)
+
+<br>
+
+<img src="assets/screenshot.png" alt="lazypodman managing containers, images, volumes and live logs in the terminal" width="900">
 
 </div>
 
