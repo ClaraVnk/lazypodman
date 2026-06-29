@@ -76,7 +76,8 @@ Until Phase 6 lands, the module path stays as upstream to keep `git cherry-pick 
 - ✅ Go module renamed to `github.com/ClaraVnk/lazypodman`.
 - ✅ `DockerCommand` type renamed to `ContainerCommand` (and its `New*`/`Limited*`/dummy variants).
 - ✅ Docker backend removed: `pkg/runtime/docker` deleted, the `docker` build tag and its CI job retired, `runtime: docker` now returns a clear "Podman-only" error. `github.com/docker/docker` is no longer a direct dependency (the `docker/cli` direct dependency is gone); it remains only as a transitive dependency of the containers/podman tree.
-- ⏳ Remaining: binary/scripts/packaging rename (`Dockerfile` → `Containerfile`, archive `docker-compose.yml`), and pruning the `docker/docker` CVE allowlist entries once govulncheck confirms they are no longer reachable transitively.
+- ⏳ Remaining: binary/scripts/packaging rename (`Dockerfile` → `Containerfile`, archive `docker-compose.yml`).
+- ℹ️ The `docker/docker` CVE allowlist entries stay: govulncheck confirms they are still reachable *transitively* through the containers/podman bindings tree (which depends on the moby/docker types), so removing our own backend does not eliminate them. They are not removable without an upstream change.
 
 > Historical note: an intermediate step first gated the Docker backend behind a `-tags docker` build tag (keeping it as an opt-in backend) before this full removal; that gating machinery was retired here.
 
