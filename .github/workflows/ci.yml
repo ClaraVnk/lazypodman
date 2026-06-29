@@ -207,6 +207,11 @@ jobs:
       # keeps the gated Docker code from rotting and checks Docker parity.
       GOFLAGS: -mod=vendor -tags=containers_image_openpgp,exclude_graphdriver_btrfs,exclude_graphdriver_devicemapper,remote,docker
       LAZYPODMAN_INTEGRATION: "1"
+      # The main lint job only sees the default (no-docker) build; lint the
+      # gated Docker configuration here so it cannot drift. Same heap caps as
+      # the lint job so golangci-lint doesn't OOM on the Podman dep tree.
+      GOGC: "20"
+      GOMEMLIMIT: 6GiB
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -221,6 +226,12 @@ jobs:
           key: ${{runner.os}}-go-${{hashFiles('**/go.sum')}}-docker
           restore-keys: |
             ${{runner.os}}-go-
+      - name: Lint the Docker build configuration
+        # GOFLAGS above carries -tags …,docker, which golangci-lint honors, so
+        # this analyses the docker-tagged files the default lint job skips.
+        uses: golangci/golangci-lint-action@v9
+        with:
+          version: v2.12.2
       - name: Build with the Docker backend compiled in
         run: |
           go build ./...

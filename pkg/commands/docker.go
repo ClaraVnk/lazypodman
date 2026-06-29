@@ -23,11 +23,8 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-const (
-	dockerHostEnvKey = "DOCKER_HOST"
-	// runtimeEnvKey overrides the configured backend ("docker" | "podman").
-	runtimeEnvKey = "LAZYPODMAN_RUNTIME"
-)
+// runtimeEnvKey overrides the configured backend ("docker" | "podman").
+const runtimeEnvKey = "LAZYPODMAN_RUNTIME"
 
 // selectBackend resolves which container runtime to use: the
 // LAZYPODMAN_RUNTIME env var wins, then the config `runtime:` field, then
@@ -160,8 +157,9 @@ func NewDockerCommand(log *logrus.Entry, osCommand *OSCommand, tr *i18n.Translat
 }
 
 // buildRuntime constructs the selected container runtime and the closers
-// that must run on shutdown. The Docker path resolves the host (honoring
-// an SSH tunnel); the Podman path is a scaffold until Phase 3b.
+// that must run on shutdown. The Docker backend is gated behind -tags docker
+// (see runtime_docker.go / runtime_nodocker.go); the Podman backend connects
+// lazily to the engine socket.
 func buildRuntime(backend string, osCommand *OSCommand) (runtime.ContainerRuntime, []io.Closer, error) {
 	switch backend {
 	case "docker":

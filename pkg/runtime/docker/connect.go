@@ -28,8 +28,8 @@ const dockerHostEnvKey = "DOCKER_HOST"
 // SSH tunneling for ssh:// hosts is NOT handled here — callers needing
 // that should resolve the host themselves (via ResolveDockerHost) and
 // pass it to New(client.NewClientWithOpts(...)). The SSH tunnel helper
-// lives in pkg/commands/ssh and stays there until Phase 1d wires
-// pkg/commands to construct runtimes via this package.
+// lives in pkg/commands/ssh; newDockerBackend (pkg/commands) orchestrates
+// host resolution and the tunnel before calling NewWithHost.
 func NewFromEnv() (*Runtime, error) {
 	host, err := ResolveDockerHost()
 	if err != nil {

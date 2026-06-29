@@ -107,11 +107,9 @@ func blkioToDomain(b dockercontainer.BlkioStats) domain.BlkioStats {
 	return out
 }
 
-// AttachContainer is not yet implemented in the runtime abstraction.
-// Upstream lazydocker shells out to `docker attach` (via exec.Cmd) for
-// the interactive attach flow, which lives in pkg/commands and stays
-// there until Phase 1d figures out the right shape for an SDK-native
-// attach.
+// AttachContainer is intentionally unsupported in the runtime abstraction.
+// Per ADR 0004 the interactive attach stays a CLI exec (`docker attach` via
+// exec.Cmd) in pkg/commands; both backends return ErrUnsupported here.
 func (r *Runtime) AttachContainer(ctx context.Context, id string, opts runtime.AttachOptions) (domain.AttachStream, error) {
 	return nil, runtime.ErrUnsupported
 }

@@ -13,6 +13,10 @@ import (
 	dockerruntime "github.com/ClaraVnk/lazypodman/pkg/runtime/docker"
 )
 
+// dockerHostEnvKey is the standard Docker host environment variable, read and
+// written here to hand the resolved host to the SSH tunnel helper.
+const dockerHostEnvKey = "DOCKER_HOST"
+
 // newDockerBackend builds the Docker runtime, resolving the host (honouring an
 // SSH tunnel). It is compiled only with -tags docker; the default Podman-only
 // build uses the stub in runtime_nodocker.go, which keeps the Docker SDK (and

@@ -6,6 +6,6 @@
 //
 // Construction is intentionally narrow: New takes an already-built
 // *client.Client and trusts the caller to have negotiated the API
-// version, resolved DOCKER_HOST, and set up any SSH tunnel. Centralising
-// connection logic stays in pkg/commands until Phase 1d.
+// version, resolved DOCKER_HOST, and set up any SSH tunnel — newDockerBackend
+// in pkg/commands orchestrates that before calling NewWithHost.
 package docker
