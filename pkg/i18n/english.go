@@ -75,12 +75,14 @@ type TranslationSet struct {
 	VolumesTitle                string
 	NetworksTitle               string
 	PodsTitle                   string
+	QuadletsTitle               string
 	NoContainers                string
 	NoContainer                 string
 	NoImages                    string
 	NoVolumes                   string
 	NoNetworks                  string
 	NoPods                      string
+	NoQuadlets                  string
 	NoServices                  string
 	RemoveImage                 string
 	RemoveVolume                string
@@ -118,6 +120,7 @@ type TranslationSet struct {
 	LogsTitle                   string
 	ConfigTitle                 string
 	KubeTitle                   string
+	QuadletSourceTitle          string
 	EnvTitle                    string
 	DockerComposeConfigTitle    string
 	StatsTitle                  string
@@ -143,6 +146,7 @@ type TranslationSet struct {
 	FocusVolumes    string
 	FocusNetworks   string
 	FocusPods       string
+	FocusQuadlets   string
 }
 
 func englishSet() TranslationSet {
@@ -237,12 +241,14 @@ func englishSet() TranslationSet {
 		VolumesTitle:                "Volumes",
 		NetworksTitle:               "Networks",
 		PodsTitle:                   "Pods",
+		QuadletsTitle:               "Quadlets",
 		CustomCommandTitle:          "Custom Command:",
 		BulkCommandTitle:            "Bulk Command:",
 		ErrorTitle:                  "Error",
 		LogsTitle:                   "Logs",
 		ConfigTitle:                 "Config",
 		KubeTitle:                   "Kube",
+		QuadletSourceTitle:          "Source",
 		EnvTitle:                    "Env",
 		DockerComposeConfigTitle:    "Docker-Compose Config",
 		TopTitle:                    "Top",
@@ -261,6 +267,7 @@ func englishSet() TranslationSet {
 		NoVolumes:    "No volumes",
 		NoNetworks:   "No networks",
 		NoPods:       "No pods",
+		NoQuadlets:   "No quadlets",
 		NoServices:   "No services",
 
 		ConfirmQuit:                 "Are you sure you want to quit?",
@@ -293,5 +300,6 @@ func englishSet() TranslationSet {
 		FocusVolumes:    "focus volumes panel",
 		FocusNetworks:   "focus networks panel",
 		FocusPods:       "focus pods panel",
+		FocusQuadlets:   "focus quadlets panel",
 	}
 }

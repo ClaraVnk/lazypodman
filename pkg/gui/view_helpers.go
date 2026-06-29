@@ -371,6 +371,7 @@ func (gui *Gui) allSidePanels() []panels.ISideListPanel {
 		gui.Panels.Volumes,
 		gui.Panels.Networks,
 		gui.Panels.Pods,
+		gui.Panels.Quadlets,
 	}
 }
 

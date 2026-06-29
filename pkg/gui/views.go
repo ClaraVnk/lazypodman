@@ -34,6 +34,7 @@ type Views struct {
 	Volumes    *gocui.View
 	Networks   *gocui.View
 	Pods       *gocui.View
+	Quadlets   *gocui.View
 
 	// main panel
 	Main *gocui.View
@@ -74,6 +75,7 @@ func (gui *Gui) orderedViewNameMappings() []viewNameMapping {
 		{viewPtr: &gui.Views.Volumes, name: "volumes", autoPosition: true},
 		{viewPtr: &gui.Views.Networks, name: "networks", autoPosition: true},
 		{viewPtr: &gui.Views.Pods, name: "pods", autoPosition: true},
+		{viewPtr: &gui.Views.Quadlets, name: "quadlets", autoPosition: true},
 
 		{viewPtr: &gui.Views.Main, name: "main", autoPosition: true},
 
@@ -158,6 +160,11 @@ func (gui *Gui) createAllViews() error {
 	gui.Views.Pods.Title = gui.Tr.PodsTitle
 	gui.Views.Pods.TitlePrefix = "[7]"
 	gui.Views.Pods.SelBgColor = selectedLineBgColor
+
+	gui.Views.Quadlets.Highlight = true
+	gui.Views.Quadlets.Title = gui.Tr.QuadletsTitle
+	gui.Views.Quadlets.TitlePrefix = "[8]"
+	gui.Views.Quadlets.SelBgColor = selectedLineBgColor
 
 	gui.Views.Options.Frame = false
 	gui.Views.Options.FgColor = gui.GetOptionsPanelTextColor()

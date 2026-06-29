@@ -99,9 +99,16 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
 <pre>
   <kbd>d</kbd>: remove pod
   <kbd>b</kbd>: 查看批量命令
+  <kbd>S</kbd>: 启动项目
+  <kbd>s</kbd>: 停止
+  <kbd>r</kbd>: 重新启动
   <kbd>enter</kbd>: 聚焦主面板
   <kbd>[</kbd>: 上一个选项卡
   <kbd>]</kbd>: 下一个选项卡
+  <kbd>enter</kbd>: 聚焦主面板
+  <kbd>[</kbd>: 上一个选项卡
+  <kbd>]</kbd>: 下一个选项卡
+  <kbd>/</kbd>: 过滤列表
   <kbd>/</kbd>: 过滤列表
 </pre>
 
@@ -123,4 +130,5 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
   <kbd>5</kbd>: focus volumes panel
   <kbd>6</kbd>: focus networks panel
   <kbd>7</kbd>: focus pods panel
+  <kbd>8</kbd>: focus quadlets panel
 </pre>

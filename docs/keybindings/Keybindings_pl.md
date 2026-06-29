@@ -99,9 +99,16 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
 <pre>
   <kbd>d</kbd>: remove pod
   <kbd>b</kbd>: view bulk commands
+  <kbd>S</kbd>: start
+  <kbd>s</kbd>: zatrzymaj
+  <kbd>r</kbd>: restartuj
   <kbd>enter</kbd>: skup na głównym panelu
   <kbd>[</kbd>: poprzednia zakładka
   <kbd>]</kbd>: następna zakładka
+  <kbd>enter</kbd>: skup na głównym panelu
+  <kbd>[</kbd>: poprzednia zakładka
+  <kbd>]</kbd>: następna zakładka
+  <kbd>/</kbd>: filter list
   <kbd>/</kbd>: filter list
 </pre>
 
@@ -123,4 +130,5 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
   <kbd>5</kbd>: focus volumes panel
   <kbd>6</kbd>: focus networks panel
   <kbd>7</kbd>: focus pods panel
+  <kbd>8</kbd>: focus quadlets panel
 </pre>

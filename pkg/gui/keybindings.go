@@ -445,6 +445,27 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 			Description: gui.Tr.ViewBulkCommands,
 		},
 		{
+			ViewName:    "quadlets",
+			Key:         'S',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.handleQuadletStart,
+			Description: gui.Tr.Start,
+		},
+		{
+			ViewName:    "quadlets",
+			Key:         's',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.handleQuadletStop,
+			Description: gui.Tr.Stop,
+		},
+		{
+			ViewName:    "quadlets",
+			Key:         'r',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.handleQuadletRestart,
+			Description: gui.Tr.Restart,
+		},
+		{
 			ViewName:    "main",
 			Key:         gocui.KeyEsc,
 			Modifier:    gocui.ModNone,
@@ -556,6 +577,7 @@ func (gui *Gui) GetInitialKeybindings() []*Binding {
 		{Handler: gui.handleGoTo(gui.Panels.Volumes.View), Key: '5', Description: gui.Tr.FocusVolumes},
 		{Handler: gui.handleGoTo(gui.Panels.Networks.View), Key: '6', Description: gui.Tr.FocusNetworks},
 		{Handler: gui.handleGoTo(gui.Panels.Pods.View), Key: '7', Description: gui.Tr.FocusPods},
+		{Handler: gui.handleGoTo(gui.Panels.Quadlets.View), Key: '8', Description: gui.Tr.FocusQuadlets},
 	}...)
 
 	for _, panel := range gui.allListPanels() {
