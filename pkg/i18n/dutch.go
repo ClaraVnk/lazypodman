@@ -11,7 +11,7 @@ func dutchSet() TranslationSet {
 		NoViewMachingNewLineFocusedSwitchStatement: "No view matching newLineFocused switch statement",
 
 		ErrorOccurred:                     "Er is iets fout gegaan! Zou je hier een issue aan willen maken: https://github.com/jesseduffield/lazydocker/issues",
-		ConnectionFailed:                  "connectie naar de docker client mislukt. Het zou kunnen dat je de docker client moet herstarten",
+		ConnectionFailed:                  "connectie naar de {{engine}} client mislukt. Het zou kunnen dat je de {{engine}} client moet herstarten",
 		UnattachableContainerError:        "Container heeft geen ondersteuning voor vastmaken. Je zou de service met het '-it' argument kunnen draaien of stop dit in je `stdin_open: true, tty: true` docker-compose.yml",
 		CannotAttachStoppedContainerError: "Je kan niet een vastgemaakte container stoppen, je moet het eerst starten (dit kan je doen met de 'r' toets) (ja ik ben te leu om dat voor je te doen automatisch)",
 		CannotAccessDockerSocketError:     "Kan de docker socket niet bereiken: unix:///var/run/docker.sock\nDraai lazydocker als root of lees https://docs.docker.com/install/linux/linux-postinstall/",

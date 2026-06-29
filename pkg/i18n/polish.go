@@ -11,7 +11,7 @@ func polishSet() TranslationSet {
 		NoViewMachingNewLineFocusedSwitchStatement: "Żaden widok nie odpowiada instrukcji przełączenia newLineFocused",
 
 		ErrorOccurred:                     "Wystąpił błąd! Proszę go zgłosić na https://github.com/jesseduffield/lazydocker/issues",
-		ConnectionFailed:                  "Błąd połączenia z Dockerem. Być może należy go zrestartować.",
+		ConnectionFailed:                  "Błąd połączenia z {{engine}}. Być może należy go zrestartować.",
 		UnattachableContainerError:        "Kontener nie obsługuje przyczepiania (attach). Musisz albo użyć flag '-it', albo `stdin_open: true, tty: true` w pliku docker-compose.yml.",
 		CannotAttachStoppedContainerError: "Nie można przyczepić się do zatrzymanego kontenera, należy go najpierw uruchomić (co można wykonać wciskając przycisk 'r')",
 		CannotAccessDockerSocketError:     "Nie udało się uzyskać dostępu do unix:///var/run/docker.sock\nUruchom program jako root lub przeczytaj https://docs.docker.com/install/linux/linux-postinstall/",

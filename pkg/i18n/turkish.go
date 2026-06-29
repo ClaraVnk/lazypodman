@@ -11,7 +11,7 @@ func turkishSet() TranslationSet {
 		NoViewMachingNewLineFocusedSwitchStatement: "NewLineFocused anahtar deyimi ile eşleşen görünüm yok",
 
 		ErrorOccurred:                     "Bir hata oluştu! Lütfen https://github.com/jesseduffield/lazydocker/issues adresinden bir hataya ilişkin konu oluşturun",
-		ConnectionFailed:                  "Docker bağlantısı başarısız oldu. Docker' ı yeniden başlatmanız gerekebilir",
+		ConnectionFailed:                  "{{engine}} bağlantısı başarısız oldu. {{engine}}' ı yeniden başlatmanız gerekebilir",
 		UnattachableContainerError:        "Konteyner attaching modunda çalışmayı desteklemiyor. Hizmeti '-it' opsiyonu ile çalıştırmanız veya docker-compose.yml dosyasında `stdin_open: true, tty: true` kullanmanız gerekir.",
 		CannotAttachStoppedContainerError: "Durdurulan konteynera bağlanamazsınız, ilk önce başlatmanız gerekir (aslında başlatmayı r tuşu ile yapabilirsiniz) (evet, senin için bunu otomatik olarak yapabilirim fakat çok tembelim) (hata mesajı ile seninle birebir iletişim kurmam çok daha güzel)",
 		CannotAccessDockerSocketError:     "Docker' a şu adresten erişilemiyor : unix:///var/run/docker.sock\n lazydocker' ı root(kök kullanıcı) olarak çalıştır veya şu adresteki adımları takip et : https://docs.docker.com/install/linux/linux-postinstall/",
