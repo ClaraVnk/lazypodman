@@ -1,12 +1,12 @@
-// Package compliance holds the dual-backend conformance suite: the same
-// read-contract assertions run against both the Docker and Podman
-// implementations of runtime.ContainerRuntime, so we have an objective,
-// reusable definition of "parity" before flipping the default backend
-// (ADR 0005, Phase 4).
+// Package compliance holds the conformance suite: read-contract assertions
+// run against the Podman implementation of runtime.ContainerRuntime, giving
+// an objective, reusable definition of the engine read contract. It began as
+// a dual-backend (Docker + Podman) parity gate (ADR 0005, Phase 4); the
+// Docker backend was removed in Phase 6, leaving Podman.
 //
 // The suite is opt-in: it talks to a live engine socket, so it is skipped
-// unless LAZYPODMAN_INTEGRATION=1. Each backend is skipped individually if
-// its socket cannot be reached. Build with the Podman client tags:
+// unless LAZYPODMAN_INTEGRATION=1, and the backend is skipped if its socket
+// cannot be reached. Build with the Podman client tags:
 //
 //	LAZYPODMAN_INTEGRATION=1 go test -tags \
 //	  'containers_image_openpgp exclude_graphdriver_btrfs exclude_graphdriver_devicemapper remote' \
@@ -25,9 +25,8 @@ import (
 )
 
 // complianceBackends maps a backend name to its constructor. Podman is the
-// default backend and is always registered; the Docker backend lives behind
-// the `docker` build tag (its SDK is excluded from the default build), so it
-// registers itself from compliance_docker_test.go only when that tag is set.
+// only backend lazypodman ships; the map is kept (rather than inlined) so a
+// future backend can register itself here without reshaping the suite.
 var complianceBackends = map[string]func() (runtime.ContainerRuntime, error){
 	"podman": func() (runtime.ContainerRuntime, error) { return podmanruntime.NewFromEnv() },
 }

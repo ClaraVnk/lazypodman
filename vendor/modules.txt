@@ -124,6 +124,8 @@ github.com/coreos/go-systemd/v22/dbus
 github.com/coreos/go-systemd/v22/internal/dlopen
 github.com/coreos/go-systemd/v22/journal
 github.com/coreos/go-systemd/v22/sdjournal
+# github.com/creack/pty v1.1.24
+## explicit; go 1.18
 # github.com/cyberphone/json-canonicalization v0.0.0-20241213102144-19d51d7fe467
 ## explicit
 github.com/cyberphone/json-canonicalization/go/src/webpki.org/jsoncanonicalizer
@@ -149,20 +151,6 @@ github.com/disiqueira/gotree/v3
 # github.com/distribution/reference v0.6.0
 ## explicit; go 1.20
 github.com/distribution/reference
-# github.com/docker/cli v29.0.3+incompatible
-## explicit
-github.com/docker/cli/cli/config
-github.com/docker/cli/cli/config/configfile
-github.com/docker/cli/cli/config/credentials
-github.com/docker/cli/cli/config/memorystore
-github.com/docker/cli/cli/config/types
-github.com/docker/cli/cli/connhelper
-github.com/docker/cli/cli/connhelper/commandconn
-github.com/docker/cli/cli/connhelper/internal/syntax
-github.com/docker/cli/cli/connhelper/ssh
-github.com/docker/cli/cli/context
-github.com/docker/cli/cli/context/docker
-github.com/docker/cli/cli/context/store
 # github.com/docker/distribution v2.8.3+incompatible
 ## explicit
 github.com/docker/distribution/registry/api/errcode
@@ -195,7 +183,6 @@ github.com/docker/docker/client
 github.com/docker/docker/pkg/homedir
 github.com/docker/docker/pkg/jsonmessage
 github.com/docker/docker/pkg/progress
-github.com/docker/docker/pkg/stdcopy
 github.com/docker/docker/pkg/streamformatter
 # github.com/docker/docker-credential-helpers v0.9.4
 ## explicit; go 1.21
@@ -219,9 +206,6 @@ github.com/felixge/httpsnoop
 ## explicit; go 1.17
 github.com/fsnotify/fsnotify
 github.com/fsnotify/fsnotify/internal
-# github.com/fvbommel/sortorder v1.1.0
-## explicit; go 1.13
-github.com/fvbommel/sortorder
 # github.com/gdamore/encoding v1.0.1
 ## explicit; go 1.9
 github.com/gdamore/encoding
@@ -408,44 +392,12 @@ github.com/mistifyio/go-zfs/v3
 # github.com/moby/docker-image-spec v1.3.1
 ## explicit; go 1.18
 github.com/moby/docker-image-spec/specs-go/v1
-# github.com/moby/moby/api v1.55.0
-## explicit; go 1.24
-github.com/moby/moby/api/types
-github.com/moby/moby/api/types/blkiodev
-github.com/moby/moby/api/types/build
-github.com/moby/moby/api/types/checkpoint
-github.com/moby/moby/api/types/common
-github.com/moby/moby/api/types/container
-github.com/moby/moby/api/types/events
-github.com/moby/moby/api/types/image
-github.com/moby/moby/api/types/jsonstream
-github.com/moby/moby/api/types/mount
-github.com/moby/moby/api/types/network
-github.com/moby/moby/api/types/plugin
-github.com/moby/moby/api/types/registry
-github.com/moby/moby/api/types/storage
-github.com/moby/moby/api/types/swarm
-github.com/moby/moby/api/types/system
-github.com/moby/moby/api/types/volume
-# github.com/moby/moby/client v0.5.0
-## explicit; go 1.24
-github.com/moby/moby/client
-github.com/moby/moby/client/internal
-github.com/moby/moby/client/internal/mod
-github.com/moby/moby/client/internal/timestamp
-github.com/moby/moby/client/pkg/versions
-# github.com/moby/sys/atomicwriter v0.1.0
-## explicit; go 1.18
-github.com/moby/sys/atomicwriter
 # github.com/moby/sys/capability v0.4.0
 ## explicit; go 1.21
 github.com/moby/sys/capability
 # github.com/moby/sys/mountinfo v0.7.2
 ## explicit; go 1.17
 github.com/moby/sys/mountinfo
-# github.com/moby/sys/sequential v0.6.0
-## explicit; go 1.17
-github.com/moby/sys/sequential
 # github.com/moby/sys/user v0.4.0
 ## explicit; go 1.17
 github.com/moby/sys/user

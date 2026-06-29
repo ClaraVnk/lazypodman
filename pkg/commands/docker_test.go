@@ -14,7 +14,6 @@ import (
 func TestEngineName(t *testing.T) {
 	cases := map[string]string{
 		"podman": "Podman",
-		"docker": "Docker",
 		"":       "container engine",
 		"weird":  "container engine",
 	}
@@ -36,7 +35,9 @@ func TestConnectionFailedIsBackendAware(t *testing.T) {
 }
 
 // TestSelectBackend covers the runtime selection precedence:
-// LAZYPODMAN_RUNTIME env > config `runtime:` > "podman" default.
+// LAZYPODMAN_RUNTIME env > config `runtime:` > "podman" default. selectBackend
+// only resolves the raw string; buildRuntime is what rejects anything other
+// than "podman" (lazypodman is Podman-only since ADR 0002 Phase 6).
 func TestSelectBackend(t *testing.T) {
 	cases := []struct {
 		name      string
@@ -46,9 +47,9 @@ func TestSelectBackend(t *testing.T) {
 		want      string
 	}{
 		{"default when nothing set", "", "", false, "podman"},
-		{"config selects docker", "", "docker", false, "docker"},
-		{"env overrides config", "podman", "docker", false, "podman"},
-		{"env wins, trimmed and lowercased", "  Docker  ", "podman", false, "docker"},
+		{"config value is resolved", "", "podman", false, "podman"},
+		{"env overrides config", "podman", "other", false, "podman"},
+		{"env wins, trimmed and lowercased", "  Podman  ", "other", false, "podman"},
 		{"nil UserConfig falls back to default", "", "", true, "podman"},
 	}
 	for _, tc := range cases {

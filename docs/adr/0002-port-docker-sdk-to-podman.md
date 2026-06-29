@@ -71,6 +71,15 @@ Once the Podman backend has been the default for at least one release cycle and 
 
 Until Phase 6 lands, the module path stays as upstream to keep `git cherry-pick upstream/master -- ...` cheap.
 
+**Status — largely implemented (after the v0.1.0 release on the Podman default):**
+
+- ✅ Go module renamed to `github.com/ClaraVnk/lazypodman`.
+- ✅ `DockerCommand` type renamed to `ContainerCommand` (and its `New*`/`Limited*`/dummy variants).
+- ✅ Docker backend removed: `pkg/runtime/docker` deleted, the `docker` build tag and its CI job retired, `runtime: docker` now returns a clear "Podman-only" error. `github.com/docker/docker` is no longer a direct dependency (the `docker/cli` direct dependency is gone); it remains only as a transitive dependency of the containers/podman tree.
+- ⏳ Remaining: binary/scripts/packaging rename (`Dockerfile` → `Containerfile`, archive `docker-compose.yml`), and pruning the `docker/docker` CVE allowlist entries once govulncheck confirms they are no longer reachable transitively.
+
+> Historical note: an intermediate step first gated the Docker backend behind a `-tags docker` build tag (keeping it as an opt-in backend) before this full removal; that gating machinery was retired here.
+
 ## Consequences
 
 - **Pro**: incremental, low-risk, each phase ships value. Upstream lazydocker fixes remain easy to absorb until Phase 6.

@@ -1,5 +1,0 @@
-//go:build docker && !windows
-
-package docker
-
-const defaultDockerHost = "unix:///var/run/docker.sock"

@@ -42,15 +42,13 @@ func selectBackend(config *config.AppConfig) string {
 	return "podman"
 }
 
-// EngineName returns the human-facing name of the active backend
-// ("Podman", "Docker") for user-facing messages, falling back to a neutral
-// label when the backend is unknown.
+// EngineName returns the human-facing name of the active backend ("Podman")
+// for user-facing messages, falling back to a neutral label when the backend
+// is unknown.
 func (c *ContainerCommand) EngineName() string {
 	switch c.Backend {
 	case "podman":
 		return "Podman"
-	case "docker":
-		return "Docker"
 	default:
 		return "container engine"
 	}
@@ -115,7 +113,7 @@ func (c *ContainerCommand) NewCommandObject(obj CommandObject) CommandObject {
 // NewContainerCommand it runs docker commands
 func NewContainerCommand(log *logrus.Entry, osCommand *OSCommand, tr *i18n.TranslationSet, config *config.AppConfig, errorChan chan error) (*ContainerCommand, error) {
 	backend := selectBackend(config)
-	rt, closers, err := buildRuntime(backend, osCommand)
+	rt, closers, err := buildRuntime(backend)
 	if err != nil {
 		return nil, err
 	}
@@ -156,18 +154,11 @@ func NewContainerCommand(log *logrus.Entry, osCommand *OSCommand, tr *i18n.Trans
 	return dockerCommand, nil
 }
 
-// buildRuntime constructs the selected container runtime and the closers
-// that must run on shutdown. The Docker backend is gated behind -tags docker
-// (see runtime_docker.go / runtime_nodocker.go); the Podman backend connects
-// lazily to the engine socket.
-func buildRuntime(backend string, osCommand *OSCommand) (runtime.ContainerRuntime, []io.Closer, error) {
+// buildRuntime constructs the selected container runtime and the closers that
+// must run on shutdown. lazypodman is Podman-only; the inherited Docker
+// backend was removed in ADR 0002 Phase 6.
+func buildRuntime(backend string) (runtime.ContainerRuntime, []io.Closer, error) {
 	switch backend {
-	case "docker":
-		// The Docker backend is compiled in only with -tags docker; the
-		// default Podman-only build returns an error here. See
-		// runtime_docker.go / runtime_nodocker.go.
-		return newDockerBackend(osCommand)
-
 	case "podman":
 		rt, err := podmanruntime.NewFromEnv()
 		if err != nil {
@@ -175,8 +166,11 @@ func buildRuntime(backend string, osCommand *OSCommand) (runtime.ContainerRuntim
 		}
 		return rt, []io.Closer{rt}, nil
 
+	case "docker":
+		return nil, nil, fmt.Errorf("the Docker backend has been removed; lazypodman is Podman-only — unset runtime or set it to \"podman\"")
+
 	default:
-		return nil, nil, fmt.Errorf("unknown runtime %q: set runtime to \"docker\" or \"podman\"", backend)
+		return nil, nil, fmt.Errorf("unknown runtime %q: lazypodman only supports \"podman\"", backend)
 	}
 }
 
