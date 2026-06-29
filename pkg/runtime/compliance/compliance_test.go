@@ -21,22 +21,24 @@ import (
 	"time"
 
 	"github.com/ClaraVnk/lazypodman/pkg/runtime"
-	dockerruntime "github.com/ClaraVnk/lazypodman/pkg/runtime/docker"
 	podmanruntime "github.com/ClaraVnk/lazypodman/pkg/runtime/podman"
 )
+
+// complianceBackends maps a backend name to its constructor. Podman is the
+// default backend and is always registered; the Docker backend lives behind
+// the `docker` build tag (its SDK is excluded from the default build), so it
+// registers itself from compliance_docker_test.go only when that tag is set.
+var complianceBackends = map[string]func() (runtime.ContainerRuntime, error){
+	"podman": func() (runtime.ContainerRuntime, error) { return podmanruntime.NewFromEnv() },
+}
 
 func TestCompliance(t *testing.T) {
 	if os.Getenv("LAZYPODMAN_INTEGRATION") != "1" {
 		t.Skip("set LAZYPODMAN_INTEGRATION=1 to run the dual-backend compliance suite")
 	}
 
-	backends := map[string]func() (runtime.ContainerRuntime, error){
-		"docker": func() (runtime.ContainerRuntime, error) { return dockerruntime.NewFromEnv() },
-		"podman": func() (runtime.ContainerRuntime, error) { return podmanruntime.NewFromEnv() },
-	}
-
 	ran := 0
-	for name, build := range backends {
+	for name, build := range complianceBackends {
 		rt, err := build()
 		if err != nil {
 			t.Logf("%s: backend unavailable, skipping (%v)", name, err)

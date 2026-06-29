@@ -13,11 +13,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/ClaraVnk/lazypodman/pkg/commands/ssh"
 	"github.com/ClaraVnk/lazypodman/pkg/config"
 	"github.com/ClaraVnk/lazypodman/pkg/i18n"
 	"github.com/ClaraVnk/lazypodman/pkg/runtime"
-	dockerruntime "github.com/ClaraVnk/lazypodman/pkg/runtime/docker"
 	podmanruntime "github.com/ClaraVnk/lazypodman/pkg/runtime/podman"
 	"github.com/ClaraVnk/lazypodman/pkg/utils"
 	"github.com/imdario/mergo"
@@ -167,34 +165,10 @@ func NewDockerCommand(log *logrus.Entry, osCommand *OSCommand, tr *i18n.Translat
 func buildRuntime(backend string, osCommand *OSCommand) (runtime.ContainerRuntime, []io.Closer, error) {
 	switch backend {
 	case "docker":
-		dockerHost, err := dockerruntime.ResolveDockerHost()
-		if err != nil {
-			ogLog.Printf("> could not determine host %v", err)
-		}
-
-		// NOTE: Inject the determined docker host to the environment. This allows the
-		//       `SSHHandler.HandleSSHDockerHost()` to create a local unix socket tunneled
-		//       over SSH to the specified ssh host.
-		if strings.HasPrefix(dockerHost, "ssh://") {
-			os.Setenv(dockerHostEnvKey, dockerHost)
-		}
-
-		tunnelCloser, err := ssh.NewSSHHandler(osCommand).HandleSSHDockerHost()
-		if err != nil {
-			ogLog.Fatal(err)
-		}
-
-		// Retrieve the docker host from the environment which could have been set by
-		// the `SSHHandler.HandleSSHDockerHost()` and override `dockerHost`.
-		if h := os.Getenv(dockerHostEnvKey); h != "" {
-			dockerHost = h
-		}
-
-		rt, err := dockerruntime.NewWithHost(dockerHost)
-		if err != nil {
-			ogLog.Fatal(err)
-		}
-		return rt, []io.Closer{tunnelCloser, rt}, nil
+		// The Docker backend is compiled in only with -tags docker; the
+		// default Podman-only build returns an error here. See
+		// runtime_docker.go / runtime_nodocker.go.
+		return newDockerBackend(osCommand)
 
 	case "podman":
 		rt, err := podmanruntime.NewFromEnv()

@@ -176,11 +176,12 @@ jobs:
             exit 1
           fi
           echo "Podman socket is up and serving the API."
-      - name: Run dual-backend compliance suite
-        # Exercises the Podman backend (CONTAINER_HOST above) and the Docker
-        # backend (the runner's preinstalled docker daemon) against the same
-        # read contracts. The Podman socket is guaranteed up by the previous
-        # step; the Docker backend self-skips if its socket is absent.
+      - name: Run compliance suite (Podman backend)
+        # Exercises the Podman backend (CONTAINER_HOST above) against the
+        # read contracts. The Docker backend is gated behind `-tags docker`
+        # (its SDK is kept out of the default build), so it is not registered
+        # here; the docker-backend job runs the same suite against Docker with
+        # the tag set. The Podman socket is guaranteed up by the previous step.
         run: |
           go test -v ./pkg/runtime/compliance/...
       - name: Verify Podman streaming cancellation
@@ -196,3 +197,40 @@ jobs:
             docker.io/library/busybox sh -c 'while true; do echo log; sleep 1; done'
           trap 'podman --url unix:///tmp/podman.sock rm -f ci-logspam >/dev/null 2>&1 || true' EXIT
           go test -race -run TestContainerLogsCancelUnblocks ./pkg/runtime/podman/
+  docker-backend:
+    name: docker backend (-tags docker)
+    runs-on: ubuntu-latest
+    env:
+      # Same Podman client tags as the rest of the matrix, plus `docker` to
+      # compile the Docker runtime back in. The default build omits it so the
+      # shipped binary stays free of the Docker SDK (and its CVEs); this job
+      # keeps the gated Docker code from rotting and checks Docker parity.
+      GOFLAGS: -mod=vendor -tags=containers_image_openpgp,exclude_graphdriver_btrfs,exclude_graphdriver_devicemapper,remote,docker
+      LAZYPODMAN_INTEGRATION: "1"
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Setup Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: 1.26.x
+      - name: Cache build
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/go-build
+          key: ${{runner.os}}-go-${{hashFiles('**/go.sum')}}-docker
+          restore-keys: |
+            ${{runner.os}}-go-
+      - name: Build with the Docker backend compiled in
+        run: |
+          go build ./...
+      - name: Test the Docker runtime and its gated callers
+        run: |
+          go test -race ./pkg/runtime/docker/... ./pkg/commands/...
+      - name: Run compliance suite (Docker backend)
+        # The ubuntu runner ships a running Docker daemon; DOCKER_HOST defaults
+        # to its local socket, which dockerruntime.NewFromEnv resolves. Podman
+        # is absent in this job, so its backend self-skips and only Docker is
+        # exercised against the shared read contracts.
+        run: |
+          go test -v ./pkg/runtime/compliance/...

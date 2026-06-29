@@ -15,6 +15,14 @@ fi
 
 for d in $( find ./* -maxdepth 10 ! -path "./vendor*" ! -path "./.git*" ! -path "./scripts*" -type d); do
     if ls $d/*.go &> /dev/null; then
+        # The Docker runtime is gated behind `-tags docker` (its SDK is kept
+        # out of the default build), so every file in pkg/runtime/docker is
+        # excluded here and `go test` would error with "build constraints
+        # exclude all Go files". Skip such packages; the docker job exercises
+        # them with the tag.
+        if ! go list "$d" &> /dev/null; then
+            continue
+        fi
         args="-race -coverprofile=profile.out -covermode=atomic $d"
         if [ "$use_go_test" == true ]; then
             gotest $args

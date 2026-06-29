@@ -1,3 +1,5 @@
+//go:build docker
+
 // Package docker implements runtime.ContainerRuntime against the Docker
 // Engine API via the official Docker Go SDK
 // (github.com/docker/docker/client).
