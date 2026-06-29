@@ -40,6 +40,21 @@ func (r *Runtime) ContainerLogs(ctx context.Context, id string, opts runtime.Log
 	// client but can be cancelled when the reader is closed.
 	logCtx, cancel := context.WithCancel(conn)
 
+	// A followed stream's reader (io.Copy in the GUI) only unblocks once the
+	// bindings call returns, i.e. once logCtx is cancelled. Closing the
+	// reader cancels it, but the caller cancels its ctx (e.g. when switching
+	// containers) without closing the reader first, so wire ctx cancellation
+	// to logCtx too — otherwise the stream, and the GUI task waiting on it,
+	// never stops. Mirrors ContainerStats. The goroutine exits when either
+	// ctx or logCtx is done, so it does not leak.
+	go func() {
+		select {
+		case <-ctx.Done():
+			cancel()
+		case <-logCtx.Done():
+		}
+	}()
+
 	// Producer: the blocking Logs call. It does not close the line
 	// channels, so we do once it returns.
 	go func() {
