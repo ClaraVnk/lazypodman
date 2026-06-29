@@ -1,15 +1,20 @@
 services:
-  lazydocker:
+  lazypodman:
     build:
-      context: https://github.com/jesseduffield/lazydocker.git
+      context: .
       args:
         BASE_IMAGE_BUILDER: golang
         GOARCH: amd64
         GOARM:
-    image: lazyteam/lazydocker
-    container_name: lazydocker
+    image: lazypodman
+    container_name: lazypodman
     stdin_open: true
     tty: true
+    environment:
+      # lazypodman talks to the engine over its API socket (no CLI needed).
+      CONTAINER_HOST: unix:///run/podman/podman.sock
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - ./config:/.config/jesseduffield/lazydocker
+      # Expose the host Podman socket. For a rootless engine, use
+      # ${XDG_RUNTIME_DIR}/podman/podman.sock on both sides instead.
+      - /run/podman/podman.sock:/run/podman/podman.sock
+      - ./config:/.config/lazypodman
