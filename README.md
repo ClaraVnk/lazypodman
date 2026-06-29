@@ -46,7 +46,17 @@ Podman-only features (pods, kube export, quadlets) appear in the UI **only when 
 
 ## Install
 
-Pre-built release binaries are not published yet — build from source.
+### Released binary (Linux/macOS)
+
+Once a release is published, install or update the latest binary into `~/.local/bin`:
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/ClaraVnk/lazypodman/main/scripts/install_update_linux.sh | bash
+```
+
+Pre-built archives for Linux, macOS and Windows (amd64/arm64) are attached to each [GitHub Release](https://github.com/ClaraVnk/lazypodman/releases).
+
+### Build from source
 
 ```sh
 git clone https://github.com/ClaraVnk/lazypodman.git

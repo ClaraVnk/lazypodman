@@ -1,5 +1,6 @@
 lazypodman*
 lazydocker*
+dist/
 .claude/
 TODO.md
 Lazypodman.code-workspace
