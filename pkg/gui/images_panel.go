@@ -101,7 +101,7 @@ func (gui *Gui) reloadImages() error {
 }
 
 func (gui *Gui) refreshStateImages() error {
-	images, err := gui.DockerCommand.RefreshImages()
+	images, err := gui.ContainerCommand.RefreshImages()
 	if err != nil {
 		return err
 	}
@@ -182,7 +182,7 @@ func (gui *Gui) handleImagesRemoveMenu(g *gocui.Gui, v *gocui.View) error {
 func (gui *Gui) handlePruneImages() error {
 	return gui.createConfirmationPanel(gui.Tr.Confirm, gui.Tr.ConfirmPruneImages, func(g *gocui.Gui, v *gocui.View) error {
 		return gui.WithWaitingStatus(gui.Tr.PruningStatus, func() error {
-			err := gui.DockerCommand.PruneImages()
+			err := gui.ContainerCommand.PruneImages()
 			if err != nil {
 				return gui.createErrorPanel(err.Error())
 			}
@@ -197,7 +197,7 @@ func (gui *Gui) handleImagesCustomCommand(g *gocui.Gui, v *gocui.View) error {
 		return nil
 	}
 
-	commandObject := gui.DockerCommand.NewCommandObject(commands.CommandObject{
+	commandObject := gui.ContainerCommand.NewCommandObject(commands.CommandObject{
 		Image: img,
 	})
 
@@ -217,7 +217,7 @@ func (gui *Gui) handleImagesBulkCommand(g *gocui.Gui, v *gocui.View) error {
 	bulkCommands := make([]config.CustomCommand, 0, len(baseBulkCommands)+len(gui.Config.UserConfig.BulkCommands.Images))
 	bulkCommands = append(bulkCommands, baseBulkCommands...)
 	bulkCommands = append(bulkCommands, gui.Config.UserConfig.BulkCommands.Images...)
-	commandObject := gui.DockerCommand.NewCommandObject(commands.CommandObject{})
+	commandObject := gui.ContainerCommand.NewCommandObject(commands.CommandObject{})
 
 	return gui.createBulkCommandMenu(bulkCommands, commandObject)
 }

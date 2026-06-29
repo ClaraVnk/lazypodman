@@ -35,15 +35,15 @@ func NewDummyLog() *logrus.Entry {
 	return log.WithField("test", "test")
 }
 
-// NewDummyDockerCommand creates a new dummy DockerCommand for testing
-func NewDummyDockerCommand() *DockerCommand {
-	return NewDummyDockerCommandWithOSCommand(NewDummyOSCommand())
+// NewDummyContainerCommand creates a new dummy ContainerCommand for testing
+func NewDummyContainerCommand() *ContainerCommand {
+	return NewDummyContainerCommandWithOSCommand(NewDummyOSCommand())
 }
 
-// NewDummyDockerCommandWithOSCommand creates a new dummy DockerCommand for testing
-func NewDummyDockerCommandWithOSCommand(osCommand *OSCommand) *DockerCommand {
+// NewDummyContainerCommandWithOSCommand creates a new dummy ContainerCommand for testing
+func NewDummyContainerCommandWithOSCommand(osCommand *OSCommand) *ContainerCommand {
 	newAppConfig := NewDummyAppConfig()
-	return &DockerCommand{
+	return &ContainerCommand{
 		Log:       NewDummyLog(),
 		OSCommand: osCommand,
 		Tr:        i18n.NewTranslationSet(NewDummyLog(), newAppConfig.UserConfig.Gui.Language),

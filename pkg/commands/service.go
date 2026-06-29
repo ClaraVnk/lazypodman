@@ -11,13 +11,13 @@ import (
 
 // Service : A docker Service
 type Service struct {
-	Name          string
-	ID            string
-	ProjectName   string
-	OSCommand     *OSCommand
-	Log           *logrus.Entry
-	Container     *Container
-	DockerCommand LimitedDockerCommand
+	Name             string
+	ID               string
+	ProjectName      string
+	OSCommand        *OSCommand
+	Log              *logrus.Entry
+	Container        *Container
+	ContainerCommand LimitedContainerCommand
 }
 
 // Remove removes the service's containers
@@ -48,7 +48,7 @@ func (s *Service) Start() error {
 func (s *Service) runCommand(templateCmdStr string) error {
 	command := utils.ApplyTemplate(
 		templateCmdStr,
-		s.DockerCommand.NewCommandObject(CommandObject{Service: s}),
+		s.ContainerCommand.NewCommandObject(CommandObject{Service: s}),
 	)
 	return s.OSCommand.RunCommand(command)
 }
@@ -63,7 +63,7 @@ func (s *Service) ViewLogs() (*exec.Cmd, error) {
 	templateString := s.OSCommand.Config.UserConfig.CommandTemplates.ViewServiceLogs
 	command := utils.ApplyTemplate(
 		templateString,
-		s.DockerCommand.NewCommandObject(CommandObject{Service: s}),
+		s.ContainerCommand.NewCommandObject(CommandObject{Service: s}),
 	)
 
 	cmd := s.OSCommand.ExecutableFromString(command)
@@ -77,7 +77,7 @@ func (s *Service) RenderTop(ctx context.Context) (string, error) {
 	templateString := s.OSCommand.Config.UserConfig.CommandTemplates.ServiceTop
 	command := utils.ApplyTemplate(
 		templateString,
-		s.DockerCommand.NewCommandObject(CommandObject{Service: s}),
+		s.ContainerCommand.NewCommandObject(CommandObject{Service: s}),
 	)
 
 	return s.OSCommand.RunCommandWithOutputContext(ctx, command)

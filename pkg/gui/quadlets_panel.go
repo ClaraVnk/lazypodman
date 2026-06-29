@@ -40,7 +40,7 @@ func (gui *Gui) getQuadletsPanel() *panels.SideListPanel[*commands.Quadlet] {
 		// Quadlets are managed via systemd and only exist on a Podman
 		// backend; hide the panel otherwise.
 		Hide: func() bool {
-			return !gui.DockerCommand.QuadletsSupported()
+			return !gui.ContainerCommand.QuadletsSupported()
 		},
 	}
 }
@@ -77,7 +77,7 @@ func (gui *Gui) reloadQuadlets() error {
 }
 
 func (gui *Gui) refreshStateQuadlets() error {
-	quadlets, err := gui.DockerCommand.RefreshQuadlets()
+	quadlets, err := gui.ContainerCommand.RefreshQuadlets()
 	if err != nil {
 		return err
 	}

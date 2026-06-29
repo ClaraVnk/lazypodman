@@ -46,7 +46,7 @@ func (gui *Gui) getPodsPanel() *panels.SideListPanel[*commands.Pod] {
 		GetTableCells: presentation.GetPodDisplayStrings,
 		// Pods only exist on a Podman backend; hide the panel otherwise.
 		Hide: func() bool {
-			return !gui.DockerCommand.PodsSupported()
+			return !gui.ContainerCommand.PodsSupported()
 		},
 	}
 }
@@ -54,7 +54,7 @@ func (gui *Gui) getPodsPanel() *panels.SideListPanel[*commands.Pod] {
 // renderPodKube renders the pod's `generate kube` YAML in the main panel.
 func (gui *Gui) renderPodKube(pod *commands.Pod) tasks.TaskFunc {
 	return gui.NewSimpleRenderStringTask(func() string {
-		yaml, err := gui.DockerCommand.GenerateKube([]string{pod.Name})
+		yaml, err := gui.ContainerCommand.GenerateKube([]string{pod.Name})
 		if err != nil {
 			return err.Error()
 		}
@@ -114,7 +114,7 @@ func (gui *Gui) reloadPods() error {
 }
 
 func (gui *Gui) refreshStatePods() error {
-	pods, err := gui.DockerCommand.RefreshPods()
+	pods, err := gui.ContainerCommand.RefreshPods()
 	if err != nil {
 		return err
 	}
@@ -172,7 +172,7 @@ func (gui *Gui) handlePodsRemoveMenu(g *gocui.Gui, v *gocui.View) error {
 func (gui *Gui) handlePrunePods() error {
 	return gui.createConfirmationPanel(gui.Tr.Confirm, gui.Tr.ConfirmPrunePods, func(g *gocui.Gui, v *gocui.View) error {
 		return gui.WithWaitingStatus(gui.Tr.PruningStatus, func() error {
-			err := gui.DockerCommand.PrunePods()
+			err := gui.ContainerCommand.PrunePods()
 			if err != nil {
 				return gui.createErrorPanel(err.Error())
 			}
@@ -189,7 +189,7 @@ func (gui *Gui) handlePodsBulkCommand(g *gocui.Gui, v *gocui.View) error {
 		},
 	}
 
-	commandObject := gui.DockerCommand.NewCommandObject(commands.CommandObject{})
+	commandObject := gui.ContainerCommand.NewCommandObject(commands.CommandObject{})
 
 	return gui.createBulkCommandMenu(baseBulkCommands, commandObject)
 }

@@ -91,7 +91,7 @@ func (gui *Gui) getContainersPanel() *panels.SideListPanel[*commands.Container] 
 			// When project-scoped, apply project and standalone filtering.
 			// Otherwise all containers are shown in a flat list regardless
 			// of which compose project they belong to.
-			if gui.DockerCommand.IsProjectScoped() {
+			if gui.ContainerCommand.IsProjectScoped() {
 				// This check must be inside the IsProjectScoped guard: when
 				// not project-scoped, services are still derived from container
 				// labels, so compose-managed containers from other projects
@@ -108,7 +108,7 @@ func (gui *Gui) getContainersPanel() *panels.SideListPanel[*commands.Container] 
 				// standalone, not from any compose project) are always shown.
 				selectedProject := gui.getSelectedProjectName()
 				if selectedProject == "" {
-					selectedProject = gui.DockerCommand.LocalProjectName
+					selectedProject = gui.ContainerCommand.LocalProjectName
 				}
 				if selectedProject != "" && container.ProjectName != "" && container.ProjectName != selectedProject {
 					return false
@@ -276,7 +276,7 @@ func (gui *Gui) refreshContainersAndServices() error {
 	originalSelectedLineIdx := gui.Panels.Services.SelectedIdx
 	selectedService, isServiceSelected := gui.Panels.Services.List.TryGet(originalSelectedLineIdx)
 
-	containers, services, err := gui.DockerCommand.RefreshContainersAndServices(
+	containers, services, err := gui.ContainerCommand.RefreshContainersAndServices(
 		gui.Panels.Containers.List.GetAllItems(),
 	)
 	if err != nil {
@@ -434,7 +434,7 @@ func (gui *Gui) handleContainerAttach(g *gocui.Gui, v *gocui.View) error {
 func (gui *Gui) handlePruneContainers() error {
 	return gui.createConfirmationPanel(gui.Tr.Confirm, gui.Tr.ConfirmPruneContainers, func(g *gocui.Gui, v *gocui.View) error {
 		return gui.WithWaitingStatus(gui.Tr.PruningStatus, func() error {
-			err := gui.DockerCommand.PruneContainers()
+			err := gui.ContainerCommand.PruneContainers()
 			if err != nil {
 				return gui.createErrorPanel(err.Error())
 			}
@@ -464,7 +464,7 @@ func (gui *Gui) handleContainersExecShell(g *gocui.Gui, v *gocui.View) error {
 }
 
 func (gui *Gui) containerExecShell(container *commands.Container) error {
-	commandObject := gui.DockerCommand.NewCommandObject(commands.CommandObject{
+	commandObject := gui.ContainerCommand.NewCommandObject(commands.CommandObject{
 		Container: container,
 	})
 
@@ -481,7 +481,7 @@ func (gui *Gui) handleContainersCustomCommand(g *gocui.Gui, v *gocui.View) error
 		return nil
 	}
 
-	commandObject := gui.DockerCommand.NewCommandObject(commands.CommandObject{
+	commandObject := gui.ContainerCommand.NewCommandObject(commands.CommandObject{
 		Container: ctr,
 	})
 
@@ -537,7 +537,7 @@ func (gui *Gui) handleContainersBulkCommand(g *gocui.Gui, v *gocui.View) error {
 	bulkCommands := make([]config.CustomCommand, 0, len(baseBulkCommands)+len(gui.Config.UserConfig.BulkCommands.Containers))
 	bulkCommands = append(bulkCommands, baseBulkCommands...)
 	bulkCommands = append(bulkCommands, gui.Config.UserConfig.BulkCommands.Containers...)
-	commandObject := gui.DockerCommand.NewCommandObject(commands.CommandObject{})
+	commandObject := gui.ContainerCommand.NewCommandObject(commands.CommandObject{})
 
 	return gui.createBulkCommandMenu(bulkCommands, commandObject)
 }

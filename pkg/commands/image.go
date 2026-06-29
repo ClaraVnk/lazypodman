@@ -14,14 +14,14 @@ import (
 
 // Image : an OCI image known to the runtime.
 type Image struct {
-	Name          string
-	Tag           string
-	ID            string
-	Image         domain.ImageInfo
-	OSCommand     *OSCommand
-	Log           *logrus.Entry
-	DockerCommand LimitedDockerCommand
-	Runtime       runtime.ContainerRuntime
+	Name             string
+	Tag              string
+	ID               string
+	Image            domain.ImageInfo
+	OSCommand        *OSCommand
+	Log              *logrus.Entry
+	ContainerCommand LimitedContainerCommand
+	Runtime          runtime.ContainerRuntime
 }
 
 // Remove removes the image.
@@ -87,7 +87,7 @@ func (i *Image) RenderHistory() (string, error) {
 }
 
 // RefreshImages returns the current list of images.
-func (c *DockerCommand) RefreshImages() ([]*Image, error) {
+func (c *ContainerCommand) RefreshImages() ([]*Image, error) {
 	images, err := c.Runtime.ListImages(context.Background())
 	if err != nil {
 		return nil, err
@@ -117,14 +117,14 @@ func (c *DockerCommand) RefreshImages() ([]*Image, error) {
 		}
 
 		ownImages[i] = &Image{
-			ID:            img.ID,
-			Name:          name,
-			Tag:           tag,
-			Image:         img,
-			OSCommand:     c.OSCommand,
-			Log:           c.Log,
-			DockerCommand: c,
-			Runtime:       c.Runtime,
+			ID:               img.ID,
+			Name:             name,
+			Tag:              tag,
+			Image:            img,
+			OSCommand:        c.OSCommand,
+			Log:              c.Log,
+			ContainerCommand: c,
+			Runtime:          c.Runtime,
 		}
 	}
 
@@ -132,7 +132,7 @@ func (c *DockerCommand) RefreshImages() ([]*Image, error) {
 }
 
 // PruneImages removes dangling images.
-func (c *DockerCommand) PruneImages() error {
+func (c *ContainerCommand) PruneImages() error {
 	_, err := c.Runtime.PruneImages(context.Background())
 	return err
 }

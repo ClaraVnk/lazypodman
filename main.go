@@ -93,8 +93,8 @@ func main() {
 
 		if stderrors.Is(err, lazyruntime.ErrUnavailable) {
 			engine := "container engine"
-			if app.DockerCommand != nil {
-				engine = app.DockerCommand.EngineName()
+			if app.ContainerCommand != nil {
+				engine = app.ContainerCommand.EngineName()
 			}
 			log.Println(utils.ResolvePlaceholderString(app.Tr.ConnectionFailed, map[string]string{"engine": engine}))
 			os.Exit(0)

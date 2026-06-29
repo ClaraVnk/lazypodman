@@ -34,11 +34,11 @@ type Container struct {
 	Details     domain.ContainerDetails
 	// DetailsFetched is true once Inspect has populated Details at least
 	// once. Replaces the upstream ContainerJSONBase != nil heuristic.
-	DetailsFetched  bool
-	MonitoringStats bool
-	DockerCommand   LimitedDockerCommand
-	Runtime         runtime.ContainerRuntime
-	Tr              *i18n.TranslationSet
+	DetailsFetched   bool
+	MonitoringStats  bool
+	ContainerCommand LimitedContainerCommand
+	Runtime          runtime.ContainerRuntime
+	Tr               *i18n.TranslationSet
 
 	StatsMutex deadlock.Mutex
 }
@@ -122,7 +122,7 @@ func (c *Container) Top(ctx context.Context) (domain.TopOutput, error) {
 }
 
 // PruneContainers removes all stopped containers.
-func (c *DockerCommand) PruneContainers() error {
+func (c *ContainerCommand) PruneContainers() error {
 	_, err := c.Runtime.PruneContainers(context.Background())
 	return err
 }

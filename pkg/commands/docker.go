@@ -45,7 +45,7 @@ func selectBackend(config *config.AppConfig) string {
 // EngineName returns the human-facing name of the active backend
 // ("Podman", "Docker") for user-facing messages, falling back to a neutral
 // label when the backend is unknown.
-func (c *DockerCommand) EngineName() string {
+func (c *ContainerCommand) EngineName() string {
 	switch c.Backend {
 	case "podman":
 		return "Podman"
@@ -56,8 +56,8 @@ func (c *DockerCommand) EngineName() string {
 	}
 }
 
-// DockerCommand is our main docker interface
-type DockerCommand struct {
+// ContainerCommand is our main docker interface
+type ContainerCommand struct {
 	Log       *logrus.Entry
 	OSCommand *OSCommand
 	Tr        *i18n.TranslationSet
@@ -78,10 +78,10 @@ type DockerCommand struct {
 	Closers []io.Closer
 }
 
-var _ io.Closer = &DockerCommand{}
+var _ io.Closer = &ContainerCommand{}
 
-// LimitedDockerCommand is a stripped-down DockerCommand with just the methods the container/service/image might need
-type LimitedDockerCommand interface {
+// LimitedContainerCommand is a stripped-down ContainerCommand with just the methods the container/service/image might need
+type LimitedContainerCommand interface {
 	NewCommandObject(CommandObject) CommandObject
 }
 
@@ -97,7 +97,7 @@ type CommandObject struct {
 }
 
 // NewCommandObject takes a command object and returns a default command object with the passed command object merged in
-func (c *DockerCommand) NewCommandObject(obj CommandObject) CommandObject {
+func (c *ContainerCommand) NewCommandObject(obj CommandObject) CommandObject {
 	defaultObj := CommandObject{DockerCompose: c.Config.UserConfig.CommandTemplates.DockerCompose}
 	_ = mergo.Merge(&defaultObj, obj)
 
@@ -112,15 +112,15 @@ func (c *DockerCommand) NewCommandObject(obj CommandObject) CommandObject {
 	return defaultObj
 }
 
-// NewDockerCommand it runs docker commands
-func NewDockerCommand(log *logrus.Entry, osCommand *OSCommand, tr *i18n.TranslationSet, config *config.AppConfig, errorChan chan error) (*DockerCommand, error) {
+// NewContainerCommand it runs docker commands
+func NewContainerCommand(log *logrus.Entry, osCommand *OSCommand, tr *i18n.TranslationSet, config *config.AppConfig, errorChan chan error) (*ContainerCommand, error) {
 	backend := selectBackend(config)
 	rt, closers, err := buildRuntime(backend, osCommand)
 	if err != nil {
 		return nil, err
 	}
 
-	dockerCommand := &DockerCommand{
+	dockerCommand := &ContainerCommand{
 		Log:                    log,
 		OSCommand:              osCommand,
 		Tr:                     tr,
@@ -184,11 +184,11 @@ func buildRuntime(backend string, osCommand *OSCommand) (runtime.ContainerRuntim
 // compose project — either because we're inside a compose directory or
 // because the user passed -p. When false, the project/services panels are
 // hidden and all containers are shown in a flat list.
-func (c *DockerCommand) IsProjectScoped() bool {
+func (c *ContainerCommand) IsProjectScoped() bool {
 	return c.InDockerComposeProject || c.Config.ProjectName != ""
 }
 
-func (c *DockerCommand) setDockerComposeCommand(config *config.AppConfig) {
+func (c *ContainerCommand) setDockerComposeCommand(config *config.AppConfig) {
 	if config.UserConfig.CommandTemplates.DockerCompose != "docker compose" {
 		return
 	}
@@ -200,11 +200,11 @@ func (c *DockerCommand) setDockerComposeCommand(config *config.AppConfig) {
 	}
 }
 
-func (c *DockerCommand) Close() error {
+func (c *ContainerCommand) Close() error {
 	return utils.CloseMany(c.Closers)
 }
 
-func (c *DockerCommand) CreateClientStatMonitor(container *Container) {
+func (c *ContainerCommand) CreateClientStatMonitor(container *Container) {
 	container.MonitoringStats = true
 	defer func() { container.MonitoringStats = false }()
 
@@ -231,7 +231,7 @@ func (c *DockerCommand) CreateClientStatMonitor(container *Container) {
 	}
 }
 
-func (c *DockerCommand) RefreshContainersAndServices(currentContainers []*Container) ([]*Container, []*Service, error) {
+func (c *ContainerCommand) RefreshContainersAndServices(currentContainers []*Container) ([]*Container, []*Service, error) {
 	c.ServiceMutex.Lock()
 	defer c.ServiceMutex.Unlock()
 
@@ -288,7 +288,7 @@ func (c *DockerCommand) RefreshContainersAndServices(currentContainers []*Contai
 }
 
 // GetServicesFromContainers derives services from container labels for all projects
-func (c *DockerCommand) GetServicesFromContainers(containers []*Container) []*Service {
+func (c *ContainerCommand) GetServicesFromContainers(containers []*Container) []*Service {
 	// Use project+service as key to avoid duplicates
 	type serviceKey struct {
 		project string
@@ -307,12 +307,12 @@ func (c *DockerCommand) GetServicesFromContainers(containers []*Container) []*Se
 		}
 		seen[key] = true
 		services = append(services, &Service{
-			Name:          ctr.ServiceName,
-			ID:            ctr.ProjectName + "-" + ctr.ServiceName,
-			ProjectName:   ctr.ProjectName,
-			OSCommand:     c.OSCommand,
-			Log:           c.Log,
-			DockerCommand: c,
+			Name:             ctr.ServiceName,
+			ID:               ctr.ProjectName + "-" + ctr.ServiceName,
+			ProjectName:      ctr.ProjectName,
+			OSCommand:        c.OSCommand,
+			Log:              c.Log,
+			ContainerCommand: c,
 		})
 	}
 
@@ -322,7 +322,7 @@ func (c *DockerCommand) GetServicesFromContainers(containers []*Container) []*Se
 // mergeServices merges compose services (which may lack ProjectName) with
 // container-derived services. Compose services take priority because they
 // include services without running containers.
-func (c *DockerCommand) mergeServices(containerServices []*Service, composeServices []*Service) []*Service {
+func (c *ContainerCommand) mergeServices(containerServices []*Service, composeServices []*Service) []*Service {
 	// Set project name on compose services
 	for _, svc := range composeServices {
 		if svc.ProjectName == "" {
@@ -352,7 +352,7 @@ func (c *DockerCommand) mergeServices(containerServices []*Service, composeServi
 }
 
 // GetProjectNames returns all unique project names from containers
-func (c *DockerCommand) GetProjectNames(containers []*Container) []string {
+func (c *ContainerCommand) GetProjectNames(containers []*Container) []string {
 	seen := make(map[string]bool)
 	var names []string
 	for _, ctr := range containers {
@@ -365,7 +365,7 @@ func (c *DockerCommand) GetProjectNames(containers []*Container) []string {
 	return names
 }
 
-func (c *DockerCommand) assignContainersToServices(containers []*Container, services []*Service) {
+func (c *ContainerCommand) assignContainersToServices(containers []*Container, services []*Service) {
 L:
 	for _, service := range services {
 		for _, ctr := range containers {
@@ -379,7 +379,7 @@ L:
 }
 
 // GetContainers gets the docker containers
-func (c *DockerCommand) GetContainers(existingContainers []*Container) ([]*Container, error) {
+func (c *ContainerCommand) GetContainers(existingContainers []*Container) ([]*Container, error) {
 	c.ContainerMutex.Lock()
 	defer c.ContainerMutex.Unlock()
 
@@ -404,12 +404,12 @@ func (c *DockerCommand) GetContainers(existingContainers []*Container) ([]*Conta
 		// initialise the container if it's completely new
 		if newContainer == nil {
 			newContainer = &Container{
-				ID:            ctr.ID,
-				Runtime:       c.Runtime,
-				OSCommand:     c.OSCommand,
-				Log:           c.Log,
-				DockerCommand: c,
-				Tr:            c.Tr,
+				ID:               ctr.ID,
+				Runtime:          c.Runtime,
+				OSCommand:        c.OSCommand,
+				Log:              c.Log,
+				ContainerCommand: c,
+				Tr:               c.Tr,
 			}
 		}
 
@@ -436,7 +436,7 @@ func (c *DockerCommand) GetContainers(existingContainers []*Container) ([]*Conta
 }
 
 // GetServices gets services
-func (c *DockerCommand) GetServices() ([]*Service, error) {
+func (c *ContainerCommand) GetServices() ([]*Service, error) {
 	if !c.InDockerComposeProject {
 		return nil, nil
 	}
@@ -455,19 +455,19 @@ func (c *DockerCommand) GetServices() ([]*Service, error) {
 	services := make([]*Service, len(lines))
 	for i, str := range lines {
 		services[i] = &Service{
-			Name:          str,
-			ID:            c.LocalProjectName + "-" + str,
-			ProjectName:   c.LocalProjectName,
-			OSCommand:     c.OSCommand,
-			Log:           c.Log,
-			DockerCommand: c,
+			Name:             str,
+			ID:               c.LocalProjectName + "-" + str,
+			ProjectName:      c.LocalProjectName,
+			OSCommand:        c.OSCommand,
+			Log:              c.Log,
+			ContainerCommand: c,
 		}
 	}
 
 	return services, nil
 }
 
-func (c *DockerCommand) RefreshContainerDetails(containers []*Container) error {
+func (c *ContainerCommand) RefreshContainerDetails(containers []*Container) error {
 	c.ContainerMutex.Lock()
 	defer c.ContainerMutex.Unlock()
 
@@ -478,7 +478,7 @@ func (c *DockerCommand) RefreshContainerDetails(containers []*Container) error {
 
 // Attaches the details returned from docker inspect to each of the containers
 // this contains a bit more info than what you get from the go-docker client
-func (c *DockerCommand) SetContainerDetails(containers []*Container) {
+func (c *ContainerCommand) SetContainerDetails(containers []*Container) {
 	wg := sync.WaitGroup{}
 	for _, ctr := range containers {
 		ctr := ctr
@@ -498,7 +498,7 @@ func (c *DockerCommand) SetContainerDetails(containers []*Container) {
 }
 
 // ViewAllLogs attaches to a subprocess viewing all the logs from docker-compose
-func (c *DockerCommand) ViewAllLogs(project *Project) (*exec.Cmd, error) {
+func (c *ContainerCommand) ViewAllLogs(project *Project) (*exec.Cmd, error) {
 	cmd := c.OSCommand.ExecutableFromString(
 		utils.ApplyTemplate(
 			c.OSCommand.Config.UserConfig.CommandTemplates.ViewAllLogs,
@@ -512,12 +512,12 @@ func (c *DockerCommand) ViewAllLogs(project *Project) (*exec.Cmd, error) {
 }
 
 // DockerComposeConfig returns the result of 'docker-compose config'
-func (c *DockerCommand) DockerComposeConfig() string {
+func (c *ContainerCommand) DockerComposeConfig() string {
 	return c.DockerComposeConfigForProject(nil)
 }
 
 // DockerComposeConfigForProject returns the result of 'docker-compose config' for a specific project
-func (c *DockerCommand) DockerComposeConfigForProject(project *Project) string {
+func (c *ContainerCommand) DockerComposeConfigForProject(project *Project) string {
 	output, err := c.OSCommand.RunCommandWithOutput(
 		utils.ApplyTemplate(
 			c.OSCommand.Config.UserConfig.CommandTemplates.DockerComposeConfig,

@@ -24,7 +24,7 @@ func TestPodsCapabilityGating(t *testing.T) {
 		t.Fatalf("podman NewFromEnv: %v", err)
 	}
 
-	docker := &DockerCommand{Runtime: dockerRT}
+	docker := &ContainerCommand{Runtime: dockerRT}
 	if docker.PodsSupported() {
 		t.Error("Docker backend should not support pods")
 	}
@@ -39,7 +39,7 @@ func TestPodsCapabilityGating(t *testing.T) {
 		t.Errorf("Docker PrunePods err = %v, want nil (no-op)", err)
 	}
 
-	podman := &DockerCommand{Runtime: podmanRT}
+	podman := &ContainerCommand{Runtime: podmanRT}
 	if !podman.PodsSupported() {
 		t.Error("Podman backend should support pods")
 	}

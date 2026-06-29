@@ -13,23 +13,23 @@ import (
 // implements the runtime.QuadletManager capability; on the Docker backend
 // there are none and the GUI hides the panel.
 type Quadlet struct {
-	Name          string
-	Quadlet       domain.Quadlet
-	OSCommand     *OSCommand
-	Log           *logrus.Entry
-	DockerCommand LimitedDockerCommand
-	Runtime       runtime.QuadletManager
+	Name             string
+	Quadlet          domain.Quadlet
+	OSCommand        *OSCommand
+	Log              *logrus.Entry
+	ContainerCommand LimitedContainerCommand
+	Runtime          runtime.QuadletManager
 }
 
 // QuadletsSupported reports whether the active runtime manages quadlets.
-func (c *DockerCommand) QuadletsSupported() bool {
+func (c *ContainerCommand) QuadletsSupported() bool {
 	_, ok := c.Runtime.(runtime.QuadletManager)
 	return ok
 }
 
 // RefreshQuadlets returns the current quadlets, or nil when the runtime does
 // not manage them (e.g. the Docker backend).
-func (c *DockerCommand) RefreshQuadlets() ([]*Quadlet, error) {
+func (c *ContainerCommand) RefreshQuadlets() ([]*Quadlet, error) {
 	qm, ok := c.Runtime.(runtime.QuadletManager)
 	if !ok {
 		return nil, nil
@@ -41,12 +41,12 @@ func (c *DockerCommand) RefreshQuadlets() ([]*Quadlet, error) {
 	quadlets := make([]*Quadlet, len(infos))
 	for i, info := range infos {
 		quadlets[i] = &Quadlet{
-			Name:          info.Name,
-			Quadlet:       info,
-			OSCommand:     c.OSCommand,
-			Log:           c.Log,
-			DockerCommand: c,
-			Runtime:       qm,
+			Name:             info.Name,
+			Quadlet:          info,
+			OSCommand:        c.OSCommand,
+			Log:              c.Log,
+			ContainerCommand: c,
+			Runtime:          qm,
 		}
 	}
 	return quadlets, nil

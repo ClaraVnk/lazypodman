@@ -58,7 +58,7 @@ func (gui *Gui) getProjectPanel() *panels.SideListPanel[*commands.Project] {
 			return gui.renderContainersAndServices()
 		},
 		Hide: func() bool {
-			return !gui.DockerCommand.IsProjectScoped()
+			return !gui.ContainerCommand.IsProjectScoped()
 		},
 	}
 }
@@ -73,7 +73,7 @@ func (gui *Gui) refreshProject() error {
 		if gui.Config.ProjectName != "" {
 			selectedName = gui.Config.ProjectName
 		} else {
-			selectedName = gui.DockerCommand.LocalProjectName
+			selectedName = gui.ContainerCommand.LocalProjectName
 		}
 	}
 
@@ -98,14 +98,14 @@ func (gui *Gui) refreshProject() error {
 // they explicitly scoped to.
 func (gui *Gui) getDiscoveredProjects() []*commands.Project {
 	containers := gui.Panels.Containers.List.GetAllItems()
-	projectNames := gui.DockerCommand.GetProjectNames(containers)
+	projectNames := gui.ContainerCommand.GetProjectNames(containers)
 
 	// If we're scoped to a project but it has no running containers, still
 	// include it. We don't fall back to the directory name here to avoid
 	// briefly flashing the wrong project name on startup.
-	localName := gui.DockerCommand.LocalProjectName
+	localName := gui.ContainerCommand.LocalProjectName
 
-	if gui.DockerCommand.IsProjectScoped() && localName != "" {
+	if gui.ContainerCommand.IsProjectScoped() && localName != "" {
 		found := false
 		for _, name := range projectNames {
 			if name == localName {
@@ -166,7 +166,7 @@ func (gui *Gui) renderAllLogs(project *commands.Project) tasks.TaskFunc {
 			cmd := gui.OSCommand.RunCustomCommand(
 				utils.ApplyTemplate(
 					gui.Config.UserConfig.CommandTemplates.AllLogs,
-					gui.DockerCommand.NewCommandObject(commands.CommandObject{Project: project}),
+					gui.ContainerCommand.NewCommandObject(commands.CommandObject{Project: project}),
 				),
 			)
 
@@ -189,18 +189,18 @@ func (gui *Gui) renderAllLogs(project *commands.Project) tasks.TaskFunc {
 }
 
 func (gui *Gui) renderDockerComposeConfig(project *commands.Project) tasks.TaskFunc {
-	if !gui.DockerCommand.InDockerComposeProject {
+	if !gui.ContainerCommand.InDockerComposeProject {
 		return gui.NewSimpleRenderStringTask(func() string {
 			return "Compose config is only available when launched from a docker-compose project directory"
 		})
 	}
-	if project != nil && project.Name != gui.DockerCommand.LocalProjectName {
+	if project != nil && project.Name != gui.ContainerCommand.LocalProjectName {
 		return gui.NewSimpleRenderStringTask(func() string {
 			return "Compose config is not available for non-local projects"
 		})
 	}
 	return gui.NewSimpleRenderStringTask(func() string {
-		return utils.ColoredYamlString(gui.DockerCommand.DockerComposeConfigForProject(project))
+		return utils.ColoredYamlString(gui.ContainerCommand.DockerComposeConfigForProject(project))
 	})
 }
 
@@ -228,7 +228,7 @@ func lazypodmanTitle() string {
 // handleViewAllLogs switches to a subprocess viewing all the logs from docker-compose
 func (gui *Gui) handleViewAllLogs(g *gocui.Gui, v *gocui.View) error {
 	project, _ := gui.Panels.Projects.GetSelectedItem()
-	c, err := gui.DockerCommand.ViewAllLogs(project)
+	c, err := gui.ContainerCommand.ViewAllLogs(project)
 	if err != nil {
 		return gui.createErrorPanel(err.Error())
 	}

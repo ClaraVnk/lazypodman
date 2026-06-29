@@ -10,16 +10,16 @@ import (
 
 // Volume : a container engine volume known to lazypodman.
 type Volume struct {
-	Name          string
-	Volume        domain.VolumeInfo
-	OSCommand     *OSCommand
-	Log           *logrus.Entry
-	DockerCommand LimitedDockerCommand
-	Runtime       runtime.ContainerRuntime
+	Name             string
+	Volume           domain.VolumeInfo
+	OSCommand        *OSCommand
+	Log              *logrus.Entry
+	ContainerCommand LimitedContainerCommand
+	Runtime          runtime.ContainerRuntime
 }
 
 // RefreshVolumes returns the current list of volumes.
-func (c *DockerCommand) RefreshVolumes() ([]*Volume, error) {
+func (c *ContainerCommand) RefreshVolumes() ([]*Volume, error) {
 	volumes, err := c.Runtime.ListVolumes(context.Background())
 	if err != nil {
 		return nil, err
@@ -28,19 +28,19 @@ func (c *DockerCommand) RefreshVolumes() ([]*Volume, error) {
 	ownVolumes := make([]*Volume, len(volumes))
 	for i, vol := range volumes {
 		ownVolumes[i] = &Volume{
-			Name:          vol.Name,
-			Volume:        vol,
-			OSCommand:     c.OSCommand,
-			Log:           c.Log,
-			DockerCommand: c,
-			Runtime:       c.Runtime,
+			Name:             vol.Name,
+			Volume:           vol,
+			OSCommand:        c.OSCommand,
+			Log:              c.Log,
+			ContainerCommand: c,
+			Runtime:          c.Runtime,
 		}
 	}
 	return ownVolumes, nil
 }
 
 // PruneVolumes removes all unused volumes.
-func (c *DockerCommand) PruneVolumes() error {
+func (c *ContainerCommand) PruneVolumes() error {
 	_, err := c.Runtime.PruneVolumes(context.Background())
 	return err
 }

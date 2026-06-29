@@ -94,7 +94,7 @@ func (gui *Gui) reloadVolumes() error {
 }
 
 func (gui *Gui) refreshStateVolumes() error {
-	volumes, err := gui.DockerCommand.RefreshVolumes()
+	volumes, err := gui.ContainerCommand.RefreshVolumes()
 	if err != nil {
 		return err
 	}
@@ -152,7 +152,7 @@ func (gui *Gui) handleVolumesRemoveMenu(g *gocui.Gui, v *gocui.View) error {
 func (gui *Gui) handlePruneVolumes() error {
 	return gui.createConfirmationPanel(gui.Tr.Confirm, gui.Tr.ConfirmPruneVolumes, func(g *gocui.Gui, v *gocui.View) error {
 		return gui.WithWaitingStatus(gui.Tr.PruningStatus, func() error {
-			err := gui.DockerCommand.PruneVolumes()
+			err := gui.ContainerCommand.PruneVolumes()
 			if err != nil {
 				return gui.createErrorPanel(err.Error())
 			}
@@ -167,7 +167,7 @@ func (gui *Gui) handleVolumesCustomCommand(g *gocui.Gui, v *gocui.View) error {
 		return nil
 	}
 
-	commandObject := gui.DockerCommand.NewCommandObject(commands.CommandObject{
+	commandObject := gui.ContainerCommand.NewCommandObject(commands.CommandObject{
 		Volume: volume,
 	})
 
@@ -187,7 +187,7 @@ func (gui *Gui) handleVolumesBulkCommand(g *gocui.Gui, v *gocui.View) error {
 	bulkCommands := make([]config.CustomCommand, 0, len(baseBulkCommands)+len(gui.Config.UserConfig.BulkCommands.Volumes))
 	bulkCommands = append(bulkCommands, baseBulkCommands...)
 	bulkCommands = append(bulkCommands, gui.Config.UserConfig.BulkCommands.Volumes...)
-	commandObject := gui.DockerCommand.NewCommandObject(commands.CommandObject{})
+	commandObject := gui.ContainerCommand.NewCommandObject(commands.CommandObject{})
 
 	return gui.createBulkCommandMenu(bulkCommands, commandObject)
 }

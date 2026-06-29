@@ -17,13 +17,13 @@ import (
 type App struct {
 	closers []io.Closer
 
-	Config        *config.AppConfig
-	Log           *logrus.Entry
-	OSCommand     *commands.OSCommand
-	DockerCommand *commands.DockerCommand
-	Gui           *gui.Gui
-	Tr            *i18n.TranslationSet
-	ErrorChan     chan error
+	Config           *config.AppConfig
+	Log              *logrus.Entry
+	OSCommand        *commands.OSCommand
+	ContainerCommand *commands.ContainerCommand
+	Gui              *gui.Gui
+	Tr               *i18n.TranslationSet
+	ErrorChan        chan error
 }
 
 // NewApp bootstrap a new application
@@ -43,12 +43,12 @@ func NewApp(config *config.AppConfig) (*App, error) {
 
 	// here is the place to make use of the docker-compose.yml file in the current directory
 
-	app.DockerCommand, err = commands.NewDockerCommand(app.Log, app.OSCommand, app.Tr, app.Config, app.ErrorChan)
+	app.ContainerCommand, err = commands.NewContainerCommand(app.Log, app.OSCommand, app.Tr, app.Config, app.ErrorChan)
 	if err != nil {
 		return app, err
 	}
-	app.closers = append(app.closers, app.DockerCommand)
-	app.Gui, err = gui.NewGui(app.Log, app.DockerCommand, app.OSCommand, app.Tr, config, app.ErrorChan)
+	app.closers = append(app.closers, app.ContainerCommand)
+	app.Gui, err = gui.NewGui(app.Log, app.ContainerCommand, app.OSCommand, app.Tr, config, app.ErrorChan)
 	if err != nil {
 		return app, err
 	}

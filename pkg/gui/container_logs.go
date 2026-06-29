@@ -124,7 +124,7 @@ func (gui *Gui) writeContainerLogs(ctr *commands.Container, ctx context.Context,
 		}
 	}
 
-	readCloser, err := gui.DockerCommand.Runtime.ContainerLogs(ctx, ctr.ID, runtime.LogOptions{
+	readCloser, err := gui.ContainerCommand.Runtime.ContainerLogs(ctx, ctr.ID, runtime.LogOptions{
 		Follow:     true,
 		Tail:       gui.Config.UserConfig.Logs.Tail,
 		Since:      gui.Config.UserConfig.Logs.Since,

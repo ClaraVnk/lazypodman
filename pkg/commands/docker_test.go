@@ -19,7 +19,7 @@ func TestEngineName(t *testing.T) {
 		"weird":  "container engine",
 	}
 	for backend, want := range cases {
-		assert.Equal(t, want, (&DockerCommand{Backend: backend}).EngineName())
+		assert.Equal(t, want, (&ContainerCommand{Backend: backend}).EngineName())
 	}
 }
 
@@ -81,7 +81,7 @@ func TestIsProjectScoped(t *testing.T) {
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			c := &DockerCommand{
+			c := &ContainerCommand{
 				InDockerComposeProject: tc.inDockerComposeProject,
 				Config:                 &config.AppConfig{ProjectName: tc.projectName},
 			}
