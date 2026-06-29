@@ -181,7 +181,7 @@ func (gui *Gui) goEvery(interval time.Duration, function func() error) {
 
 // Run setup the gui with keybindings and start the mainloop
 func (gui *Gui) Run() error {
-	// closing our task manager which in turn closes the current task if there is any, so we aren't leaving processes lying around after closing lazydocker
+	// closing our task manager which in turn closes the current task if there is any, so we aren't leaving processes lying around after closing lazypodman
 	defer gui.taskManager.Close()
 
 	g, err := gocui.NewGui(gocui.NewGuiOpts{
@@ -428,7 +428,7 @@ func (gui *Gui) handleDonate(g *gocui.Gui, v *gocui.View) error {
 	if cx > len(gui.Tr.Donate) {
 		return nil
 	}
-	return gui.OSCommand.OpenLink("https://github.com/sponsors/jesseduffield")
+	return gui.OSCommand.OpenLink("https://github.com/ClaraVnk/lazypodman")
 }
 
 func (gui *Gui) editFile(filename string) error {

@@ -33,7 +33,7 @@ func Generate() {
 }
 
 func generateAtDir(dir string) {
-	mConfig, err := config.NewAppConfig("lazydocker", "", "", "", "", true, nil, "", "")
+	mConfig, err := config.NewAppConfig("lazypodman", "", "", "", "", true, nil, "", "")
 	if err != nil {
 		panic(err)
 	}
@@ -126,7 +126,7 @@ func addBinding(title string, bindingSections []*bindingSection, binding *gui.Bi
 }
 
 func formatSections(mApp *app.App, bindingSections []*bindingSection) string {
-	content := fmt.Sprintf("# Lazydocker %s\n", mApp.Tr.Menu)
+	content := fmt.Sprintf("# Lazypodman %s\n", mApp.Tr.Menu)
 
 	for _, section := range bindingSections {
 		content += formatTitle(section.title)

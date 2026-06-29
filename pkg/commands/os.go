@@ -6,7 +6,6 @@ import (
 	"io"
 	"os"
 	"os/exec"
-	"path/filepath"
 	"strings"
 	"sync"
 	"time"
@@ -289,15 +288,6 @@ func (c *OSCommand) RunPreparedCommand(cmd *exec.Cmd) error {
 		return errors.New(outString)
 	}
 	return nil
-}
-
-// GetLazydockerPath returns the path of the currently executed file
-func (c *OSCommand) GetLazydockerPath() string {
-	ex, err := os.Executable() // get the executable path for docker to use
-	if err != nil {
-		ex = os.Args[0] // fallback to the first call argument if needed
-	}
-	return filepath.ToSlash(ex)
 }
 
 // RunCustomCommand returns the pointer to a custom command

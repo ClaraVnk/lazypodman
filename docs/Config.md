@@ -2,15 +2,15 @@
 
 ## Opening The User Config
 
-The location of the user config will differ depending on your OS. You can open it via lazydocker by opening the application, clicking on the 'project' panel at the top left and pressing 'o' (or pressing 'e' if your files open in vim).
+The location of the user config will differ depending on your OS. You can open it via lazypodman by opening the application, clicking on the 'project' panel at the top left and pressing 'o' (or pressing 'e' if your files open in vim).
 
-Changes to the user config will only take place after closing and re-opening lazydocker
+Changes to the user config will only take place after closing and re-opening lazypodman
 
 ### Locations:
 
-- OSX: `~/Library/Application Support/jesseduffield/lazydocker/config.yml`
-- Linux: `~/.config/lazydocker/config.yml`
-- Windows: `C:\Users\<User>\AppData\Roaming\lazydocker\config.yml`
+- OSX: `~/Library/Application Support/lazypodman/config.yml`
+- Linux: `~/.config/lazypodman/config.yml`
+- Windows: `C:\Users\<User>\AppData\Roaming\lazypodman\config.yml`
 
 JSON schema is available for `config.yml` so that IntelliSense in Visual Studio Code
 (completion and error checking) is automatically enabled when the [YAML Red Hat][yaml]

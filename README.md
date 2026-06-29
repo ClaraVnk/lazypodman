@@ -127,6 +127,12 @@ CI runs lint (golangci-lint v2), format, tests on Linux + Windows, a build matri
 
 A hard fork of [jesseduffield/lazydocker](https://github.com/jesseduffield/lazydocker) (MIT). All credit for the original TUI, design and the bulk of the codebase goes to Jesse Duffield and the lazydocker contributors. 💛
 
+### Contributors
+
+Thanks to everyone who has contributed to lazypodman:
+
+- [@kallioli](https://github.com/kallioli) — Podman runtime fixes and test coverage
+
 ## License
 
 [MIT](LICENSE) © 2026 Clara Vanacker — and the original lazydocker authors.

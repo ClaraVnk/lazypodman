@@ -46,9 +46,9 @@ func main() {
 		runtime.GOARCH,
 	)
 
-	flaggy.SetName("lazydocker")
-	flaggy.SetDescription("The lazier way to manage everything docker")
-	flaggy.DefaultParser.AdditionalHelpPrepend = "https://github.com/jesseduffield/lazydocker"
+	flaggy.SetName("lazypodman")
+	flaggy.SetDescription("A lazier way to manage Podman from your terminal")
+	flaggy.DefaultParser.AdditionalHelpPrepend = "https://github.com/ClaraVnk/lazypodman"
 
 	flaggy.Bool(&configFlag, "c", "config", "Print the current default config")
 	flaggy.Bool(&debuggingFlag, "d", "debug", "a boolean")
@@ -74,7 +74,7 @@ func main() {
 		log.Fatal(err.Error())
 	}
 
-	appConfig, err := config.NewAppConfig("lazydocker", version, commit, date, buildSource, debuggingFlag, composeFiles, projectDir, projectName)
+	appConfig, err := config.NewAppConfig("lazypodman", version, commit, date, buildSource, debuggingFlag, composeFiles, projectDir, projectName)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
@@ -116,7 +116,7 @@ func updateBuildInfo() {
 			})
 			if ok {
 				commit = revision.Value
-				// if lazydocker was built from source we'll show the version as the
+				// if lazypodman was built from source we'll show the version as the
 				// abbreviated commit hash
 				version = utils.SafeTruncate(revision.Value, 7)
 			}

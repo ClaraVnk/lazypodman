@@ -1,12 +1,12 @@
 _This file is auto-generated. To update, make the changes in the pkg/i18n directory and then run `go run scripts/cheatsheet/main.go generate` from the project root._
 
-# Lazydocker menü
+# Lazypodman menü
 
 ## Proje
 
 <pre>
   <kbd>e</kbd>: lazzydocker ayarlarını düzenle
-  <kbd>o</kbd>: lazydocker ayarlarını aç
+  <kbd>o</kbd>: lazypodman ayarlarını aç
   <kbd>m</kbd>: kayıt defterini görüntüle
   <kbd>enter</kbd>: ana panele odaklan
   <kbd>[</kbd>: önceki sekme

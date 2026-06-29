@@ -18,7 +18,7 @@ func NewDummyOSCommand() *OSCommand {
 // NewDummyAppConfig creates a new dummy AppConfig for testing
 func NewDummyAppConfig() *config.AppConfig {
 	appConfig := &config.AppConfig{
-		Name:        "lazydocker",
+		Name:        "lazypodman",
 		Version:     "unversioned",
 		Commit:      "",
 		BuildDate:   "",

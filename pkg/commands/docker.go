@@ -74,7 +74,7 @@ type DockerCommand struct {
 	// container engine. See docs/adr/0004-phase-1d-staged-rewire-strategy.md.
 	Runtime                runtime.ContainerRuntime
 	InDockerComposeProject bool
-	// LocalProjectName is the compose project name for the directory where lazydocker was launched.
+	// LocalProjectName is the compose project name for the directory where lazypodman was launched.
 	LocalProjectName string
 	ErrorChan        chan error
 	ContainerMutex   deadlock.Mutex
@@ -208,7 +208,7 @@ func buildRuntime(backend string, osCommand *OSCommand) (runtime.ContainerRuntim
 	}
 }
 
-// IsProjectScoped reports whether lazydocker should be scoped to a single
+// IsProjectScoped reports whether lazypodman should be scoped to a single
 // compose project — either because we're inside a compose directory or
 // because the user passed -p. When false, the project/services panels are
 // hidden and all containers are shown in a flat list.
