@@ -183,3 +183,16 @@ jobs:
         # step; the Docker backend self-skips if its socket is absent.
         run: |
           go test -v ./pkg/runtime/compliance/...
+      - name: Verify Podman streaming cancellation
+        # Regression guard for the container-switch freeze: a followed log
+        # stream must tear down when the caller cancels its context, not only
+        # when the reader is closed. Provision a throwaway running container so
+        # the integration test has a live log stream to cancel, then run it
+        # under -race. Without this, the freeze would only surface in manual
+        # use (the compliance read-contracts don't open streams).
+        run: |
+          podman --url unix:///tmp/podman.sock pull -q docker.io/library/busybox
+          podman --url unix:///tmp/podman.sock run -d --name ci-logspam \
+            docker.io/library/busybox sh -c 'while true; do echo log; sleep 1; done'
+          trap 'podman --url unix:///tmp/podman.sock rm -f ci-logspam >/dev/null 2>&1 || true' EXIT
+          go test -race -run TestContainerLogsCancelUnblocks ./pkg/runtime/podman/
