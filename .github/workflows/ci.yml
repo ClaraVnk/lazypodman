@@ -155,7 +155,7 @@ jobs:
         run: |
           sudo apt-get update -q
           sudo apt-get install -y -q podman
-          podman system service -t 0 unix:///tmp/podman.sock >/tmp/podman-service.log 2>&1 &
+          podman system service --time=0 unix:///tmp/podman.sock >/tmp/podman-service.log 2>&1 &
           for i in $(seq 1 20); do
             [ -S /tmp/podman.sock ] && break
             sleep 1
