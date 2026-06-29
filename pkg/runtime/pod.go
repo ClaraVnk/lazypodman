@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/jesseduffield/lazydocker/pkg/domain"
+	"github.com/ClaraVnk/lazypodman/pkg/domain"
 )
 
 // PodRuntime is an optional capability implemented by backends that

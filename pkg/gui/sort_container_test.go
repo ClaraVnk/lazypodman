@@ -4,8 +4,8 @@ import (
 	"sort"
 	"testing"
 
-	"github.com/jesseduffield/lazydocker/pkg/commands"
-	"github.com/jesseduffield/lazydocker/pkg/domain"
+	"github.com/ClaraVnk/lazypodman/pkg/commands"
+	"github.com/ClaraVnk/lazypodman/pkg/domain"
 	"github.com/stretchr/testify/assert"
 )
 

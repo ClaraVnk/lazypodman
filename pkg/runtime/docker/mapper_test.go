@@ -9,7 +9,7 @@ import (
 	dockernetwork "github.com/docker/docker/api/types/network"
 	dockervolume "github.com/docker/docker/api/types/volume"
 
-	"github.com/jesseduffield/lazydocker/pkg/domain"
+	"github.com/ClaraVnk/lazypodman/pkg/domain"
 )
 
 func TestContainerSummaryToInfo(t *testing.T) {

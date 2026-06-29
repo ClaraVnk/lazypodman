@@ -11,7 +11,7 @@ import (
 	psDefine "github.com/containers/podman/v5/pkg/ps/define"
 	netTypes "go.podman.io/common/libnetwork/types"
 
-	"github.com/jesseduffield/lazydocker/pkg/domain"
+	"github.com/ClaraVnk/lazypodman/pkg/domain"
 )
 
 func TestMapContainerState(t *testing.T) {

@@ -7,8 +7,8 @@ import (
 
 	"github.com/containers/podman/v5/pkg/bindings/containers"
 
-	"github.com/jesseduffield/lazydocker/pkg/domain"
-	"github.com/jesseduffield/lazydocker/pkg/runtime"
+	"github.com/ClaraVnk/lazypodman/pkg/domain"
+	"github.com/ClaraVnk/lazypodman/pkg/runtime"
 )
 
 // ListContainers returns every container (running and stopped).

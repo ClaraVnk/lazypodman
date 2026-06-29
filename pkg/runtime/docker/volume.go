@@ -5,7 +5,7 @@ import (
 
 	dockervolume "github.com/docker/docker/api/types/volume"
 
-	"github.com/jesseduffield/lazydocker/pkg/domain"
+	"github.com/ClaraVnk/lazypodman/pkg/domain"
 )
 
 // ListVolumes returns every volume known to the daemon.

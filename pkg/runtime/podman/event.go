@@ -9,7 +9,7 @@ import (
 	"github.com/containers/podman/v5/pkg/bindings/system"
 	entitiesTypes "github.com/containers/podman/v5/pkg/domain/entities/types"
 
-	"github.com/jesseduffield/lazydocker/pkg/domain"
+	"github.com/ClaraVnk/lazypodman/pkg/domain"
 )
 
 // Events streams engine events. Podman's system.Events is a blocking call

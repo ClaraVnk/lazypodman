@@ -5,7 +5,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/jesseduffield/lazydocker/pkg/runtime"
+	"github.com/ClaraVnk/lazypodman/pkg/runtime"
 )
 
 // TestUnimplementedReportsUnsupported confirms the one operation not yet

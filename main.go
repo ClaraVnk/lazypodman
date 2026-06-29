@@ -9,12 +9,12 @@ import (
 	"runtime"
 	"runtime/debug"
 
+	"github.com/ClaraVnk/lazypodman/pkg/app"
+	"github.com/ClaraVnk/lazypodman/pkg/config"
+	lazyruntime "github.com/ClaraVnk/lazypodman/pkg/runtime"
+	"github.com/ClaraVnk/lazypodman/pkg/utils"
 	"github.com/go-errors/errors"
 	"github.com/integrii/flaggy"
-	"github.com/jesseduffield/lazydocker/pkg/app"
-	"github.com/jesseduffield/lazydocker/pkg/config"
-	lazyruntime "github.com/jesseduffield/lazydocker/pkg/runtime"
-	"github.com/jesseduffield/lazydocker/pkg/utils"
 	"github.com/jesseduffield/yaml"
 	"github.com/samber/lo"
 )

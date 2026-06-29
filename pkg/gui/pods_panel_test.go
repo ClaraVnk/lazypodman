@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/jesseduffield/lazydocker/pkg/commands"
-	"github.com/jesseduffield/lazydocker/pkg/domain"
+	"github.com/ClaraVnk/lazypodman/pkg/commands"
+	"github.com/ClaraVnk/lazypodman/pkg/domain"
 )
 
 // TestPodConfigStr exercises the pod detail rendering (the new, untested-

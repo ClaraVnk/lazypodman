@@ -1,4 +1,4 @@
-module github.com/jesseduffield/lazydocker
+module github.com/ClaraVnk/lazypodman
 
 go 1.25.0
 

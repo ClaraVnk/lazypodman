@@ -6,7 +6,7 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/jesseduffield/lazydocker/pkg/runtime"
+	"github.com/ClaraVnk/lazypodman/pkg/runtime"
 )
 
 // unreachableURI points at a unix socket that does not exist, so

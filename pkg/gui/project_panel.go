@@ -5,12 +5,12 @@ import (
 	"context"
 	"strings"
 
+	"github.com/ClaraVnk/lazypodman/pkg/commands"
+	"github.com/ClaraVnk/lazypodman/pkg/gui/panels"
+	"github.com/ClaraVnk/lazypodman/pkg/gui/presentation"
+	"github.com/ClaraVnk/lazypodman/pkg/tasks"
+	"github.com/ClaraVnk/lazypodman/pkg/utils"
 	"github.com/jesseduffield/gocui"
-	"github.com/jesseduffield/lazydocker/pkg/commands"
-	"github.com/jesseduffield/lazydocker/pkg/gui/panels"
-	"github.com/jesseduffield/lazydocker/pkg/gui/presentation"
-	"github.com/jesseduffield/lazydocker/pkg/tasks"
-	"github.com/jesseduffield/lazydocker/pkg/utils"
 	"github.com/jesseduffield/yaml"
 )
 

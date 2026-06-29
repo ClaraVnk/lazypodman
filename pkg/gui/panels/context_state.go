@@ -1,7 +1,7 @@
 package panels
 
 import (
-	"github.com/jesseduffield/lazydocker/pkg/tasks"
+	"github.com/ClaraVnk/lazypodman/pkg/tasks"
 	"github.com/samber/lo"
 )
 

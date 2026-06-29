@@ -4,8 +4,8 @@ import (
 	"context"
 	"errors"
 
-	"github.com/jesseduffield/lazydocker/pkg/domain"
-	"github.com/jesseduffield/lazydocker/pkg/runtime"
+	"github.com/ClaraVnk/lazypodman/pkg/domain"
+	"github.com/ClaraVnk/lazypodman/pkg/runtime"
 	"github.com/sirupsen/logrus"
 )
 

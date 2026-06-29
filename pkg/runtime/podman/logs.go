@@ -6,7 +6,7 @@ import (
 
 	"github.com/containers/podman/v5/pkg/bindings/containers"
 
-	"github.com/jesseduffield/lazydocker/pkg/runtime"
+	"github.com/ClaraVnk/lazypodman/pkg/runtime"
 )
 
 // ContainerLogs streams a container's logs. Podman's bindings deliver

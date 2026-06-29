@@ -8,15 +8,15 @@ import (
 
 	"github.com/go-errors/errors"
 
+	"github.com/ClaraVnk/lazypodman/pkg/commands"
+	"github.com/ClaraVnk/lazypodman/pkg/config"
+	"github.com/ClaraVnk/lazypodman/pkg/gui/panels"
+	"github.com/ClaraVnk/lazypodman/pkg/gui/types"
+	"github.com/ClaraVnk/lazypodman/pkg/i18n"
+	"github.com/ClaraVnk/lazypodman/pkg/tasks"
 	throttle "github.com/boz/go-throttle"
 	"github.com/jesseduffield/gocui"
 	lcUtils "github.com/jesseduffield/lazycore/pkg/utils"
-	"github.com/jesseduffield/lazydocker/pkg/commands"
-	"github.com/jesseduffield/lazydocker/pkg/config"
-	"github.com/jesseduffield/lazydocker/pkg/gui/panels"
-	"github.com/jesseduffield/lazydocker/pkg/gui/types"
-	"github.com/jesseduffield/lazydocker/pkg/i18n"
-	"github.com/jesseduffield/lazydocker/pkg/tasks"
 	"github.com/sasha-s/go-deadlock"
 	"github.com/sirupsen/logrus"
 )

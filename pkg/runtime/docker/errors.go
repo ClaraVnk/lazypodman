@@ -6,7 +6,7 @@ import (
 	cerrdefs "github.com/containerd/errdefs"
 	dockerclient "github.com/docker/docker/client"
 
-	"github.com/jesseduffield/lazydocker/pkg/runtime"
+	"github.com/ClaraVnk/lazypodman/pkg/runtime"
 )
 
 // mapErr converts an error returned by the Docker SDK into one of the

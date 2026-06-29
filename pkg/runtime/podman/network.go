@@ -5,7 +5,7 @@ import (
 
 	"github.com/containers/podman/v5/pkg/bindings/network"
 
-	"github.com/jesseduffield/lazydocker/pkg/domain"
+	"github.com/ClaraVnk/lazypodman/pkg/domain"
 )
 
 // ListNetworks returns every network known to Podman.

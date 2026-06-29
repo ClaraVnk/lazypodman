@@ -5,7 +5,7 @@ import (
 
 	"github.com/containers/podman/v5/pkg/bindings/volumes"
 
-	"github.com/jesseduffield/lazydocker/pkg/domain"
+	"github.com/ClaraVnk/lazypodman/pkg/domain"
 )
 
 // ListVolumes returns every volume known to Podman.

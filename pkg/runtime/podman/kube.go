@@ -6,7 +6,7 @@ import (
 
 	"github.com/containers/podman/v5/pkg/bindings/generate"
 
-	"github.com/jesseduffield/lazydocker/pkg/runtime"
+	"github.com/ClaraVnk/lazypodman/pkg/runtime"
 )
 
 // Compile-time check that the Podman runtime advertises the optional

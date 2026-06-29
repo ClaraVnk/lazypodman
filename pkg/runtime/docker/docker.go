@@ -3,7 +3,7 @@ package docker
 import (
 	dockerclient "github.com/docker/docker/client"
 
-	"github.com/jesseduffield/lazydocker/pkg/runtime"
+	"github.com/ClaraVnk/lazypodman/pkg/runtime"
 )
 
 // Runtime is the Docker implementation of runtime.ContainerRuntime.

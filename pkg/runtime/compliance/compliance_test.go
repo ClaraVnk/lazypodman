@@ -20,9 +20,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/jesseduffield/lazydocker/pkg/runtime"
-	dockerruntime "github.com/jesseduffield/lazydocker/pkg/runtime/docker"
-	podmanruntime "github.com/jesseduffield/lazydocker/pkg/runtime/podman"
+	"github.com/ClaraVnk/lazypodman/pkg/runtime"
+	dockerruntime "github.com/ClaraVnk/lazypodman/pkg/runtime/docker"
+	podmanruntime "github.com/ClaraVnk/lazypodman/pkg/runtime/podman"
 )
 
 func TestCompliance(t *testing.T) {

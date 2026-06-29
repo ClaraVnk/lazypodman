@@ -11,7 +11,7 @@ import (
 // TestNewWithHostVersionNegotiation verifies that NewWithHost allows API
 // version negotiation even when DOCKER_API_VERSION is set.
 //
-// Regression test for https://github.com/jesseduffield/lazydocker/issues/715
+// Regression test for https://github.com/ClaraVnk/lazypodman/issues/715
 // where users got "client version 1.25 is too old" errors because FromEnv()
 // includes WithVersionFromEnv(), which sets manualOverride=true and prevents
 // API version negotiation. The construction path used to live in

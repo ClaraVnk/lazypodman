@@ -6,8 +6,8 @@ import (
 
 	"github.com/containers/podman/v5/pkg/bindings/images"
 
-	"github.com/jesseduffield/lazydocker/pkg/domain"
-	"github.com/jesseduffield/lazydocker/pkg/runtime"
+	"github.com/ClaraVnk/lazypodman/pkg/domain"
+	"github.com/ClaraVnk/lazypodman/pkg/runtime"
 )
 
 // ListImages returns the final (non-intermediate) images known to Podman.

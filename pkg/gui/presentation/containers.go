@@ -6,11 +6,11 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/ClaraVnk/lazypodman/pkg/commands"
+	"github.com/ClaraVnk/lazypodman/pkg/config"
+	"github.com/ClaraVnk/lazypodman/pkg/domain"
+	"github.com/ClaraVnk/lazypodman/pkg/utils"
 	"github.com/fatih/color"
-	"github.com/jesseduffield/lazydocker/pkg/commands"
-	"github.com/jesseduffield/lazydocker/pkg/config"
-	"github.com/jesseduffield/lazydocker/pkg/domain"
-	"github.com/jesseduffield/lazydocker/pkg/utils"
 	"github.com/samber/lo"
 )
 

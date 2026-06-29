@@ -7,8 +7,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/jesseduffield/lazydocker/pkg/domain"
-	"github.com/jesseduffield/lazydocker/pkg/runtime"
+	"github.com/ClaraVnk/lazypodman/pkg/domain"
+	"github.com/ClaraVnk/lazypodman/pkg/runtime"
 )
 
 // Compile-time check that the Podman runtime advertises the optional

@@ -7,8 +7,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/jesseduffield/lazydocker/pkg/domain"
-	"github.com/jesseduffield/lazydocker/pkg/runtime"
+	"github.com/ClaraVnk/lazypodman/pkg/domain"
+	"github.com/ClaraVnk/lazypodman/pkg/runtime"
 )
 
 // TestContainerLogsCancelUnblocks is an integration regression test for the

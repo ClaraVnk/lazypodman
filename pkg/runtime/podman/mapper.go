@@ -10,7 +10,7 @@ import (
 	entitiesTypes "github.com/containers/podman/v5/pkg/domain/entities/types"
 	netTypes "go.podman.io/common/libnetwork/types"
 
-	"github.com/jesseduffield/lazydocker/pkg/domain"
+	"github.com/ClaraVnk/lazypodman/pkg/domain"
 )
 
 // inspectContainerToDomain converts a Podman container inspect payload to

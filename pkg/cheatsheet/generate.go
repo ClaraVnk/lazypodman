@@ -13,10 +13,10 @@ import (
 	"log"
 	"os"
 
-	"github.com/jesseduffield/lazydocker/pkg/app"
-	"github.com/jesseduffield/lazydocker/pkg/config"
-	"github.com/jesseduffield/lazydocker/pkg/gui"
-	"github.com/jesseduffield/lazydocker/pkg/i18n"
+	"github.com/ClaraVnk/lazypodman/pkg/app"
+	"github.com/ClaraVnk/lazypodman/pkg/config"
+	"github.com/ClaraVnk/lazypodman/pkg/gui"
+	"github.com/ClaraVnk/lazypodman/pkg/i18n"
 )
 
 const (

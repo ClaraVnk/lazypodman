@@ -4,9 +4,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/jesseduffield/lazydocker/pkg/config"
-	"github.com/jesseduffield/lazydocker/pkg/i18n"
-	"github.com/jesseduffield/lazydocker/pkg/utils"
+	"github.com/ClaraVnk/lazypodman/pkg/config"
+	"github.com/ClaraVnk/lazypodman/pkg/i18n"
+	"github.com/ClaraVnk/lazypodman/pkg/utils"
 	"github.com/stretchr/testify/assert"
 )
 

@@ -8,8 +8,8 @@ import (
 	"os/signal"
 	"strings"
 
+	"github.com/ClaraVnk/lazypodman/pkg/utils"
 	"github.com/fatih/color"
-	"github.com/jesseduffield/lazydocker/pkg/utils"
 )
 
 func (gui *Gui) runSubprocess(cmd *exec.Cmd) error {

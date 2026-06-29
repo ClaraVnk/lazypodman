@@ -3,7 +3,7 @@ package runtime
 import (
 	"context"
 
-	"github.com/jesseduffield/lazydocker/pkg/domain"
+	"github.com/ClaraVnk/lazypodman/pkg/domain"
 )
 
 // QuadletManager is an optional capability for backends that manage Podman

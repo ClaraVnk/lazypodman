@@ -5,8 +5,8 @@ import (
 
 	dockerimage "github.com/docker/docker/api/types/image"
 
-	"github.com/jesseduffield/lazydocker/pkg/domain"
-	"github.com/jesseduffield/lazydocker/pkg/runtime"
+	"github.com/ClaraVnk/lazypodman/pkg/domain"
+	"github.com/ClaraVnk/lazypodman/pkg/runtime"
 )
 
 // ListImages returns every image known to the daemon.

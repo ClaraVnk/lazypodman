@@ -4,10 +4,10 @@ import (
 	"context"
 	"strings"
 
+	"github.com/ClaraVnk/lazypodman/pkg/domain"
+	"github.com/ClaraVnk/lazypodman/pkg/runtime"
+	"github.com/ClaraVnk/lazypodman/pkg/utils"
 	"github.com/fatih/color"
-	"github.com/jesseduffield/lazydocker/pkg/domain"
-	"github.com/jesseduffield/lazydocker/pkg/runtime"
-	"github.com/jesseduffield/lazydocker/pkg/utils"
 	"github.com/samber/lo"
 	"github.com/sirupsen/logrus"
 )

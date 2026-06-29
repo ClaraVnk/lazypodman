@@ -7,7 +7,7 @@ import (
 
 	dockerevents "github.com/docker/docker/api/types/events"
 
-	"github.com/jesseduffield/lazydocker/pkg/domain"
+	"github.com/ClaraVnk/lazypodman/pkg/domain"
 )
 
 // Events streams runtime events. The returned channels are closed when

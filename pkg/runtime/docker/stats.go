@@ -8,8 +8,8 @@ import (
 
 	dockercontainer "github.com/docker/docker/api/types/container"
 
-	"github.com/jesseduffield/lazydocker/pkg/domain"
-	"github.com/jesseduffield/lazydocker/pkg/runtime"
+	"github.com/ClaraVnk/lazypodman/pkg/domain"
+	"github.com/ClaraVnk/lazypodman/pkg/runtime"
 )
 
 // ContainerStats opens a streaming stats subscription on a container. The

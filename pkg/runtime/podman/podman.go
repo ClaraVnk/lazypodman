@@ -7,8 +7,8 @@ import (
 
 	"github.com/containers/podman/v5/pkg/bindings"
 
-	"github.com/jesseduffield/lazydocker/pkg/domain"
-	"github.com/jesseduffield/lazydocker/pkg/runtime"
+	"github.com/ClaraVnk/lazypodman/pkg/domain"
+	"github.com/ClaraVnk/lazypodman/pkg/runtime"
 )
 
 // Runtime is the native Podman implementation of runtime.ContainerRuntime,

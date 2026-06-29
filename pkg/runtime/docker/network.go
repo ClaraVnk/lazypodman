@@ -5,7 +5,7 @@ import (
 
 	dockernetwork "github.com/docker/docker/api/types/network"
 
-	"github.com/jesseduffield/lazydocker/pkg/domain"
+	"github.com/ClaraVnk/lazypodman/pkg/domain"
 )
 
 // ListNetworks returns every network known to the daemon.

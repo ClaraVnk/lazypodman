@@ -5,7 +5,7 @@ import (
 	"io"
 	"time"
 
-	"github.com/jesseduffield/lazydocker/pkg/domain"
+	"github.com/ClaraVnk/lazypodman/pkg/domain"
 )
 
 // ContainerRuntime is everything lazypodman needs from a container

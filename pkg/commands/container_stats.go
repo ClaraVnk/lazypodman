@@ -4,7 +4,7 @@ import (
 	"math"
 	"time"
 
-	"github.com/jesseduffield/lazydocker/pkg/domain"
+	"github.com/ClaraVnk/lazypodman/pkg/domain"
 )
 
 // statsFromDomain projects a domain.Stats snapshot back onto the legacy

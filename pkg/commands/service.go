@@ -4,8 +4,8 @@ import (
 	"context"
 	"os/exec"
 
-	"github.com/jesseduffield/lazydocker/pkg/runtime"
-	"github.com/jesseduffield/lazydocker/pkg/utils"
+	"github.com/ClaraVnk/lazypodman/pkg/runtime"
+	"github.com/ClaraVnk/lazypodman/pkg/utils"
 	"github.com/sirupsen/logrus"
 )
 

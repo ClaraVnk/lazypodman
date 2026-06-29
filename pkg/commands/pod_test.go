@@ -3,8 +3,8 @@ package commands
 import (
 	"testing"
 
-	dockerruntime "github.com/jesseduffield/lazydocker/pkg/runtime/docker"
-	podmanruntime "github.com/jesseduffield/lazydocker/pkg/runtime/podman"
+	dockerruntime "github.com/ClaraVnk/lazypodman/pkg/runtime/docker"
+	podmanruntime "github.com/ClaraVnk/lazypodman/pkg/runtime/podman"
 )
 
 // TestPodsCapabilityGating checks that pods are exposed only when the
