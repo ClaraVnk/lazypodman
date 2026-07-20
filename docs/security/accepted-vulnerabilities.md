@@ -13,10 +13,13 @@ This file lists vulnerabilities flagged by `govulncheck` that we have reviewed a
 | [GO-2024-3042](https://pkg.go.dev/vuln/GO-2024-3042) | `github.com/containers/podman/v5` | `v5.8.3` | No upstream fix | Same as above — reachable via the Podman bindings tree; no fix in v5.8.3. |
 | [GO-2026-5037](https://pkg.go.dev/vuln/GO-2026-5037) | stdlib (`crypto/x509`) | `go1.26.3` | Fixed in go1.26.4 | Toolchain vulnerability, not a dependency. Accepted only until the CI toolchain ships ≥ go1.26.4, then drop. |
 | [GO-2026-5039](https://pkg.go.dev/vuln/GO-2026-5039) | stdlib (`net/textproto`) | `go1.26.3` | Fixed in go1.26.4 | Same as above — fixed by a toolchain bump to go1.26.4; remove once CI runs it. |
+| [GO-2026-5856](https://pkg.go.dev/vuln/GO-2026-5856) | stdlib (`crypto/tls`) | `go1.26.3` | Fixed in go1.26.5 | Toolchain vulnerability (Encrypted Client Hello privacy leak), not a dependency. Accepted only until the CI toolchain ships ≥ go1.26.5, then drop. |
+| [GO-2026-5853](https://pkg.go.dev/vuln/GO-2026-5853) | `github.com/sigstore/fulcio` | `v1.8.5` | Not exercised | SSRF / JWKS substitution in Fulcio's OIDC discovery. The only trace govulncheck reports is `podman.init → types.init → certificate.init`, i.e. package initialisation — lazypodman never performs sigstore signing or OIDC issuer discovery, so the vulnerable code path is unreachable at runtime. Fixed in v1.8.6, but bumping an indirect dependency we do not exercise drags in a large transitive cascade (grpc 1.78→1.81, otel 1.38→1.43, google-api, goa) across ~190 vendored files. Revisit when the containers/image tree bumps fulcio on its own. |
+| [GO-2026-5932](https://pkg.go.dev/vuln/GO-2026-5932) | `golang.org/x/crypto` | `v0.52.0` | No fix — package unmaintained | `x/crypto/openpgp` is deprecated and unmaintained upstream; there is no fixed version. Pulled in transitively by the containers/image tree, and reinforced by the `containers_image_openpgp` build tag we set to avoid a cgo dependency on gpgme. Not eliminable without an upstream migration away from `x/crypto/openpgp`. |
 
 ## How the allowlist works
 
-`.github/workflows/security.yml` runs `govulncheck -format json ./...`, then a small filter compares the reported vulnerability IDs against this list (parsed from this file). The build fails if any **unknown** vulnerability is reported. If a vulnerability listed here is no longer reported, the entry should be removed from this file.
+`.github/workflows/security.yml` runs `govulncheck ./...` and parses its text output, keeping only `Vulnerability #N: GO-YYYY-NNNN` lines — those are the vulnerabilities reachable from our code, as opposed to the ones merely present in modules we require. It then compares those IDs against this list (parsed from this file). The build fails if any **unknown** vulnerability is reported. If a vulnerability listed here is no longer reported, the entry should be removed from this file.
 
 ## When to remove an entry
 
