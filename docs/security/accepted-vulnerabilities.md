@@ -18,7 +18,16 @@ This file lists vulnerabilities flagged by `govulncheck` that we have reviewed a
 
 ## How the allowlist works
 
-`.github/workflows/security.yml` runs `govulncheck ./...` and parses its text output, keeping only `Vulnerability #N: GO-YYYY-NNNN` lines — those are the vulnerabilities reachable from our code, as opposed to the ones merely present in modules we require. It then compares those IDs against this list (parsed from this file). The build fails if any **unknown** vulnerability is reported. If a vulnerability listed here is no longer reported, the entry should be removed from this file.
+`.github/workflows/security.yml` runs `govulncheck ./...` and parses its text output, keeping only `Vulnerability #N: GO-YYYY-NNNN` lines — those are the vulnerabilities reachable from our code, as opposed to the ones merely present in modules we require. It then compares those IDs against the ones listed here.
+
+**Only an id that opens a row of the table above is accepted.** The workflow anchors its match on the row, so an id written in prose — or cited in another row's Notes column — does *not* allowlist itself. To accept a vulnerability you must give it its own row, which is also where the justification belongs.
+
+What happens on a finding outside the list depends on the trigger:
+
+- **push / pull request** → the build fails. This is the gate: an unaccepted vulnerability cannot reach `main`.
+- **weekly schedule** → the run passes and the workflow opens (or refreshes) a tracking issue instead. A vulnerability published upstream would otherwise turn `main` red with no change on our side, which reads as a broken build rather than as news. The issue closes itself once the reachable set is back within this list.
+
+If a vulnerability listed here is no longer reported, the entry should be removed from this file.
 
 ## When to remove an entry
 
