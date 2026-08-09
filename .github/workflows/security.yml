@@ -38,9 +38,13 @@ jobs:
         run: |
           set -uo pipefail
 
-          # Allowlist parsed from docs/security/accepted-vulnerabilities.md
-          # (any GO-YYYY-NNNN id mentioned there is treated as accepted).
-          grep -oE 'GO-[0-9]{4}-[0-9]+' docs/security/accepted-vulnerabilities.md \
+          # Allowlist parsed from docs/security/accepted-vulnerabilities.md.
+          # Only the id that opens a table row counts -- anchoring on the row
+          # keeps an id written in prose, or cited in another row's Notes
+          # column, from silently allowlisting itself.
+          grep -oE '^[[:space:]]*\|[[:space:]]*\[GO-[0-9]{4}-[0-9]+\]' \
+               docs/security/accepted-vulnerabilities.md \
+            | grep -oE 'GO-[0-9]{4}-[0-9]+' \
             | sort -u > allowed.txt || true
           echo "Accepted vulnerabilities:"
           if [ -s allowed.txt ]; then sed 's/^/  /' allowed.txt; else echo "  (none)"; fi
