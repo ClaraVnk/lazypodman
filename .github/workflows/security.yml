@@ -15,6 +15,13 @@ jobs:
   govulncheck:
     name: Go vulnerabilities (govulncheck)
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    env:
+      # Shared by the open/update and close steps so the two cannot drift
+      # apart and start tracking different issues.
+      TRACKING_ISSUE_TITLE: "govulncheck: unaccepted vulnerabilities on main"
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-go@v6
@@ -25,6 +32,7 @@ jobs:
           GOFLAGS: ""
         run: go install golang.org/x/vuln/cmd/govulncheck@latest
       - name: Run govulncheck with allowlist filter
+        id: scan
         env:
           GOFLAGS: -mod=vendor -tags=containers_image_openpgp,exclude_graphdriver_btrfs,exclude_graphdriver_devicemapper,remote
         run: |
@@ -32,10 +40,10 @@ jobs:
 
           # Allowlist parsed from docs/security/accepted-vulnerabilities.md
           # (any GO-YYYY-NNNN id mentioned there is treated as accepted).
-          ALLOWED=$(grep -oE 'GO-[0-9]{4}-[0-9]+' docs/security/accepted-vulnerabilities.md \
-                    | sort -u || true)
+          grep -oE 'GO-[0-9]{4}-[0-9]+' docs/security/accepted-vulnerabilities.md \
+            | sort -u > allowed.txt || true
           echo "Accepted vulnerabilities:"
-          echo "${ALLOWED:-  (none)}" | sed 's/^/  /'
+          if [ -s allowed.txt ]; then sed 's/^/  /' allowed.txt; else echo "  (none)"; fi
           echo
 
           # govulncheck exits 3 when it finds vulnerabilities that are
@@ -48,26 +56,121 @@ jobs:
           # Only lines like "Vulnerability #N: GO-YYYY-NNNN" represent
           # vulns reachable from our code (vs. "found in modules you
           # require but your code doesn't appear to call").
-          FOUND=$(grep -oE 'Vulnerability #[0-9]+: GO-[0-9]{4}-[0-9]+' govulncheck.txt \
-                  | grep -oE 'GO-[0-9]{4}-[0-9]+' \
-                  | sort -u || true)
+          grep -oE 'Vulnerability #[0-9]+: GO-[0-9]{4}-[0-9]+' govulncheck.txt \
+            | grep -oE 'GO-[0-9]{4}-[0-9]+' \
+            | sort -u > found.txt || true
           echo
           echo "Reachable vulnerabilities reported by govulncheck:"
-          echo "${FOUND:-  (none)}" | sed 's/^/  /'
+          if [ -s found.txt ]; then sed 's/^/  /' found.txt; else echo "  (none)"; fi
           echo
 
-          UNACCEPTED=$(comm -23 <(echo "$FOUND") <(echo "$ALLOWED") || true)
-          if [ -n "$UNACCEPTED" ]; then
-            echo "::error::Unaccepted vulnerability/ies detected:"
-            echo "$UNACCEPTED" | sed 's/^/  - /'
+          # This step never fails on its own: it only publishes the verdict.
+          # What to do about it depends on the trigger, and is decided by the
+          # steps below -- fail the build on push/PR, file an issue on
+          # schedule, so a vulnerability published upstream cannot turn main
+          # red without a single line of our code having changed.
+          comm -23 found.txt allowed.txt > unaccepted.txt || true
+
+          if [ -s unaccepted.txt ]; then
+            {
+              echo "unaccepted=true"
+              echo "ids=$(tr '\n' ' ' < unaccepted.txt | sed 's/ *$//')"
+            } >> "$GITHUB_OUTPUT"
+          else
+            {
+              echo "unaccepted=false"
+              echo "ids="
+            } >> "$GITHUB_OUTPUT"
+            echo "All reachable vulnerabilities are on the accepted list."
+          fi
+      - name: Fail on unaccepted vulnerabilities
+        if: steps.scan.outputs.unaccepted == 'true' && github.event_name != 'schedule'
+        run: |
+          set -euo pipefail
+          echo "::error::Unaccepted vulnerability/ies detected: ${{ steps.scan.outputs.ids }}"
+          sed 's/^/  - /' unaccepted.txt
+          echo
+          echo "Either fix the underlying dependency, or document the"
+          echo "vulnerability in docs/security/accepted-vulnerabilities.md"
+          echo "with a written justification before re-running CI."
+          exit 1
+      - name: Open or update the tracking issue
+        if: steps.scan.outputs.unaccepted == 'true' && github.event_name == 'schedule'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          IDS: ${{ steps.scan.outputs.ids }}
+        run: |
+          set -euo pipefail
+
+          {
+            echo 'The weekly `Security` scan found vulnerabilities reachable from our code'
+            echo 'that are **not** on the allowlist in `docs/security/accepted-vulnerabilities.md`.'
             echo
-            echo "Either fix the underlying dependency, or document the"
-            echo "vulnerability in docs/security/accepted-vulnerabilities.md"
-            echo "with a written justification before re-running CI."
-            exit 1
+            echo 'Scheduled runs report here rather than failing, so a vulnerability published'
+            echo 'upstream does not turn `main` red on its own. Push and pull-request runs still'
+            echo 'fail hard -- this only changes how the weekly sweep reports.'
+            echo
+            echo "Run: $RUN_URL"
+            echo
+            echo '## Unaccepted'
+            echo
+            while read -r id; do
+              echo "### $id"
+              echo
+              echo '```'
+              awk -v id="$id" '
+                index($0, "Vulnerability #") == 1 && index($0, id) > 0 { p = 1; print; next }
+                index($0, "Vulnerability #") == 1 && p { p = 0 }
+                p { print }
+              ' govulncheck.txt | head -25
+              echo '```'
+              echo
+            done < unaccepted.txt
+            echo '## How to clear this'
+            echo
+            echo 'Either bump the dependency to a fixed version, or add the id to'
+            echo '`docs/security/accepted-vulnerabilities.md` with a written justification.'
+            echo 'This issue closes itself on the next scheduled run, once the reachable set'
+            echo 'is back within the allowlist.'
+            echo
+            echo "<!-- govulncheck-ids: $IDS -->"
+          } > issue-body.md
+
+          NUMBER=$(gh issue list --state open --limit 100 --json number,title \
+                   | jq -r --arg t "$TRACKING_ISSUE_TITLE" \
+                        'map(select(.title == $t)) | if length > 0 then .[0].number else "" end')
+
+          if [ -z "$NUMBER" ]; then
+            gh issue create --title "$TRACKING_ISSUE_TITLE" --body-file issue-body.md
+            exit 0
           fi
 
-          echo "All reachable vulnerabilities are on the accepted list."
+          # Refresh the body every week so it always shows the current set, but
+          # only comment -- and so re-notify subscribers -- when it changed.
+          PREV=$(gh issue view "$NUMBER" --json body --jq '.body' \
+                 | sed -n 's/.*<!-- govulncheck-ids: \(.*\) -->.*/\1/p')
+          gh issue edit "$NUMBER" --body-file issue-body.md
+          if [ "$PREV" != "$IDS" ]; then
+            gh issue comment "$NUMBER" \
+              --body "The unaccepted set changed: ${PREV:-(none)} -> ${IDS}. Run: $RUN_URL"
+          fi
+      - name: Close the tracking issue when clean
+        if: steps.scan.outputs.unaccepted == 'false' && github.event_name == 'schedule'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          NUMBER=$(gh issue list --state open --limit 100 --json number,title \
+                   | jq -r --arg t "$TRACKING_ISSUE_TITLE" \
+                        'map(select(.title == $t)) | if length > 0 then .[0].number else "" end')
+          if [ -n "$NUMBER" ]; then
+            gh issue close "$NUMBER" \
+              --comment "Every reachable vulnerability is back on the allowlist. Run: $RUN_URL"
+          fi
       - name: Upload govulncheck report
         if: always()
         uses: actions/upload-artifact@v4
