@@ -16,7 +16,7 @@ require (
 	github.com/jesseduffield/gocui v0.3.1-0.20240418080333-8cd33929c513
 	github.com/jesseduffield/kill v0.0.0-20220618033138-bfbe04675d10
 	github.com/jesseduffield/lazycore v0.0.0-20221023210126-718a4caea996
-	github.com/jesseduffield/yaml v0.0.0-20190702115811-b900b7e08b56
+	github.com/jesseduffield/yaml v2.1.0+incompatible
 	github.com/mattn/go-runewidth v0.0.16
 	github.com/mcuadros/go-lookup v0.0.0-20171110082742-5650f26be767
 	github.com/mgutz/str v1.2.0

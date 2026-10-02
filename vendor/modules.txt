@@ -331,7 +331,7 @@ github.com/jesseduffield/kill
 ## explicit; go 1.18
 github.com/jesseduffield/lazycore/pkg/boxlayout
 github.com/jesseduffield/lazycore/pkg/utils
-# github.com/jesseduffield/yaml v0.0.0-20190702115811-b900b7e08b56
+# github.com/jesseduffield/yaml v2.1.0+incompatible
 ## explicit
 github.com/jesseduffield/yaml
 # github.com/jinzhu/copier v0.4.0

@@ -20,18 +20,18 @@ supported since they're a poor design and are gone in YAML 1.2.
 Installation and usage
 ----------------------
 
-The import path for the package is *github.com/jesseduffield/yaml*.
+The import path for the package is *gopkg.in/yaml.v2*.
 
 To install it, run:
 
-    go get github.com/jesseduffield/yaml
+    go get gopkg.in/yaml.v2
 
 API documentation
 -----------------
 
 If opened in a browser, the import path itself leads to the API documentation:
 
-  * [https://github.com/jesseduffield/yaml](https://github.com/jesseduffield/yaml)
+  * [https://gopkg.in/yaml.v2](https://gopkg.in/yaml.v2)
 
 API stability
 -------------
@@ -48,6 +48,8 @@ The yaml package is licensed under the Apache License 2.0. Please see the LICENS
 Example
 -------
 
+Some more examples can be found in the "examples" folder.
+
 ```Go
 package main
 
@@ -55,7 +57,7 @@ import (
         "fmt"
         "log"
 
-        "github.com/jesseduffield/yaml"
+        "gopkg.in/yaml.v2"
 )
 
 var data = `
