@@ -3,7 +3,7 @@ module github.com/ClaraVnk/lazypodman
 go 1.25.0
 
 require (
-	github.com/OpenPeeDeeP/xdg v0.2.1-0.20190312153938-4ba9e1eb294c
+	github.com/OpenPeeDeeP/xdg v1.0.0
 	github.com/boz/go-throttle v0.0.0-20160922054636-fdc4eab740c1
 	github.com/cloudfoundry/jibber_jabber v0.0.0-20151120183258-bcc4c8345a21
 	github.com/containers/podman/v5 v5.8.3
