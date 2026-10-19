@@ -108,6 +108,34 @@ func (c *Container) Attach() (*exec.Cmd, error) {
 	return cmd, nil
 }
 
+// ExecShellCommand is the argv for the interactive shell the "E" shortcut
+// launches. It drops into the container as the current user and sources the
+// user's shell init files, mirroring
+// `podman exec -it <id> /bin/sh -c 'eval $(...)'`.
+//
+// NOTE: It is an argv slice (not a single command line) because the exec API passes
+// it to the container without an intermediate shell: the whole script is one
+// element of the -c argument, exactly as it would be quoted on a command line.
+var ExecShellCommand = []string{
+	"/bin/sh", "-c",
+	"eval $(grep ^$(id -un): /etc/passwd | cut -d : -f 7-)",
+}
+
+// ExecShell runs an interactive shell inside the container over the container
+// runtime API. It blocks until the shell exits, so the GUI must be suspended
+// (and its background threads paused) for the duration.
+func (c *Container) ExecShell(ctx context.Context, opts runtime.ExecShellOptions) error {
+	if !c.DetailsLoaded() {
+		return errors.New(c.Tr.WaitingForContainerInfo)
+	}
+	if c.Details.State != domain.ContainerStateRunning {
+		return errors.New(c.Tr.CannotAttachStoppedContainerError)
+	}
+
+	c.Log.Warn(fmt.Sprintf("exec shell in container %s", c.Name))
+	return c.Runtime.ExecShell(ctx, c.ID, opts)
+}
+
 // Top returns the process table of the container. Errors if the container
 // is not running.
 func (c *Container) Top(ctx context.Context) (domain.TopOutput, error) {

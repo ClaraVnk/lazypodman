@@ -38,6 +38,7 @@ type ContainerRuntime interface {
 	ContainerLogs(ctx context.Context, id string, opts LogOptions) (io.ReadCloser, error)
 	ContainerTop(ctx context.Context, id string) (domain.TopOutput, error)
 	ContainerStats(ctx context.Context, id string) (<-chan domain.Stats, error)
+	ExecShell(ctx context.Context, id string, opts ExecShellOptions) error
 	AttachContainer(ctx context.Context, id string, opts AttachOptions) (domain.AttachStream, error)
 
 	PruneContainers(ctx context.Context) (domain.PruneReport, error)
@@ -114,6 +115,18 @@ type LogOptions struct {
 	// and the runtime adapter is responsible for demuxing into a plain
 	// stream — callers never see the multiplexed bytes.
 	TTY bool
+}
+
+// ExecShellOptions controls how ExecShell runs the command inside the
+// container.
+type ExecShellOptions struct {
+	// Command is the exec command and its arguments, e.g.
+	// []string{"/bin/sh", "-c", "eval $(...)"}. It is passed to the engine
+	// verbatim - no shell re-parsing is performed, so each word (including
+	// quoted scripts) must already be a separate element.
+	Command []string
+	// Tty allocates a pseudo-TTY for the exec session.
+	Tty bool
 }
 
 // AttachOptions controls how AttachContainer wires the streams.
