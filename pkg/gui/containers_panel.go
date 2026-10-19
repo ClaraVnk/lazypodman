@@ -464,15 +464,33 @@ func (gui *Gui) handleContainersExecShell(g *gocui.Gui, v *gocui.View) error {
 }
 
 func (gui *Gui) containerExecShell(container *commands.Container) error {
-	commandObject := gui.ContainerCommand.NewCommandObject(commands.CommandObject{
-		Container: container,
+	gui.Mutexes.SubprocessMutex.Lock()
+	defer gui.Mutexes.SubprocessMutex.Unlock()
+
+	if err := gui.g.Suspend(); err != nil {
+		return gui.createErrorPanel(err.Error())
+	}
+
+	gui.PauseBackgroundThreads = true
+	defer func() { gui.PauseBackgroundThreads = false }()
+
+	err := container.ExecShell(context.Background(), runtime.ExecShellOptions{
+		Command: commands.ExecShellCommand,
+		Tty:     true,
 	})
 
-	// TODO: use SDK
-	resolvedCommand := utils.ApplyTemplate("docker exec -it {{ .Container.ID }} /bin/sh -c 'eval $(grep ^$(id -un): /etc/passwd | cut -d : -f 7-)'", commandObject)
-	// attach and return the subprocess error
-	cmd := gui.OSCommand.ExecutableFromString(resolvedCommand)
-	return gui.runSubprocess(cmd)
+	if err != nil {
+		gui.g.Resume()
+		return gui.createErrorPanel(err.Error())
+	}
+
+	gui.promptToReturn()
+
+	if resumeErr := gui.g.Resume(); resumeErr != nil {
+		return gui.createErrorPanel(resumeErr.Error())
+	}
+
+	return nil
 }
 
 func (gui *Gui) handleContainersCustomCommand(g *gocui.Gui, v *gocui.View) error {
